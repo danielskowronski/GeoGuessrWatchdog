@@ -1,0 +1,65 @@
+{
+  "id": "676340ae2f718dbabdf30331",
+  "name": "An Informed World",
+  "slug": "676340ae2f718dbabdf30331",
+  "description": "Locations maximum 2 km from an area considered realitively dense in coverage. 109034 locations. See https://bit.ly/slashp for distribution and other maps.",
+  "url": "/maps/676340ae2f718dbabdf30331",
+  "playUrl": "/676340ae2f718dbabdf30331/play",
+  "published": true,
+  "banned": false,
+  "images": {
+    "backgroundLarge": null,
+    "incomplete": true
+  },
+  "bounds": {
+    "min": {
+      "lat": -54.84040253403922,
+      "lng": -170.73234474472065
+    },
+    "max": {
+      "lat": 78.21578286107786,
+      "lng": 178.38109969334502
+    }
+  },
+  "customCoordinates": null,
+  "coordinateCount": "100K+",
+  "regions": null,
+  "creator": { 
+    // hidden to protect privacy - GeoGuessr API leaks too much
+  },
+  "createdAt": "2024-12-18T21:37:52.9780000Z",
+  "updatedAt": "2026-05-07T02:15:00.2040000Z",
+  "numFinishedGames": 141045,
+  "likedByUser": null,
+  "averageScore": 17495,
+  "avatar": {
+    "background": "night",
+    "decoration": "cactus",
+    "ground": "water",
+    "landscape": "skyline"
+  },
+  "difficulty": "EASY",
+  "difficultyLevel": 2,
+  "highscore": null,
+  "isUserMap": true,
+  "highlighted": false,
+  "deleted": false,
+  "free": false,
+  "panoramaProvider": "StreetView",
+  "inExplorerMode": false,
+  "maxErrorDistance": 18499075,
+  "likes": 2388,
+  "locationSelectionMode": 1,
+  "tags": [
+    "Generated",
+    "Official Cov.",
+    "Global",
+    "Urban"
+  ],
+  "collaborators": null,
+  "flair": 0,
+  "mapSize": {
+    "coordinateCount": 109034,
+    "label": "L"
+  }
+}

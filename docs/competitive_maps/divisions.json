@@ -1,0 +1,519 @@
+{
+  "divisions": [
+    {
+      "divisionNumber": 1,
+      "divisionRank": 1,
+      "tier": "Champion",
+      "name": "Champion",
+      "pointCategories": {},
+      "promotionPercentage": 0,
+      "demotionPercentage": 0.23,
+      "doublePromotionPercentage": 0,
+      "bucketSortedBy": "Rating",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels",
+        "NmpzDuels"
+      ],
+      "numberOfGames": 0,
+      "maps": {
+        "standardDuels": {
+          "mapId": "676340ae2f718dbabdf30331",
+          "mapName": "An Informed World"
+        },
+        "noMoveDuels": {
+          "mapId": "67101e71077612dd6ac8de79",
+          "mapName": "Supersonic"
+        },
+        "nmpzDuels": {
+          "mapId": "643dbc7ccc47d3a344307998",
+          "mapName": "An Arbitrary Rural World"
+        }
+      }
+    },
+    {
+      "divisionNumber": 2,
+      "divisionRank": 2,
+      "tier": "Master",
+      "name": "Master I",
+      "pointCategories": {},
+      "promotionPercentage": 0.1,
+      "demotionPercentage": 0.2,
+      "doublePromotionPercentage": 0,
+      "bucketSortedBy": "Rating",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels",
+        "NmpzDuels"
+      ],
+      "numberOfGames": 0,
+      "maps": {
+        "standardDuels": {
+          "mapId": "676340ae2f718dbabdf30331",
+          "mapName": "An Informed World"
+        },
+        "noMoveDuels": {
+          "mapId": "65c86935d327035509fd616f",
+          "mapName": "A Rainbolt World"
+        },
+        "nmpzDuels": {
+          "mapId": "643dbc7ccc47d3a344307998",
+          "mapName": "An Arbitrary Rural World"
+        }
+      }
+    },
+    {
+      "divisionNumber": 3,
+      "divisionRank": 3,
+      "tier": "Master",
+      "name": "Master II",
+      "pointCategories": {},
+      "promotionPercentage": 0.13,
+      "demotionPercentage": 0.2,
+      "doublePromotionPercentage": 0,
+      "bucketSortedBy": "Rating",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels",
+        "NmpzDuels"
+      ],
+      "numberOfGames": 0,
+      "maps": {
+        "standardDuels": {
+          "mapId": "676340ae2f718dbabdf30331",
+          "mapName": "An Informed World"
+        },
+        "noMoveDuels": {
+          "mapId": "65c86935d327035509fd616f",
+          "mapName": "A Rainbolt World"
+        },
+        "nmpzDuels": {
+          "mapId": "643dbc7ccc47d3a344307998",
+          "mapName": "An Arbitrary Rural World"
+        }
+      }
+    },
+    {
+      "divisionNumber": 11,
+      "divisionRank": 4,
+      "tier": "Master",
+      "name": "Master III",
+      "pointCategories": {},
+      "promotionPercentage": 0.2,
+      "demotionPercentage": 0.2,
+      "doublePromotionPercentage": 0.03,
+      "bucketSortedBy": "Rating",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels",
+        "NmpzDuels"
+      ],
+      "numberOfGames": 0,
+      "maps": {
+        "standardDuels": {
+          "mapId": "676340ae2f718dbabdf30331",
+          "mapName": "An Informed World"
+        },
+        "noMoveDuels": {
+          "mapId": "65c86935d327035509fd616f",
+          "mapName": "A Rainbolt World"
+        },
+        "nmpzDuels": {
+          "mapId": "643dbc7ccc47d3a344307998",
+          "mapName": "An Arbitrary Rural World"
+        }
+      }
+    },
+    {
+      "divisionNumber": 12,
+      "divisionRank": 5,
+      "tier": "Master",
+      "name": "Master IV",
+      "pointCategories": {},
+      "promotionPercentage": 0.26,
+      "demotionPercentage": 0.2,
+      "doublePromotionPercentage": 0.03,
+      "bucketSortedBy": "Rating",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels",
+        "NmpzDuels"
+      ],
+      "numberOfGames": 0,
+      "maps": {
+        "standardDuels": {
+          "mapId": "676340ae2f718dbabdf30331",
+          "mapName": "An Informed World"
+        },
+        "noMoveDuels": {
+          "mapId": "65c86935d327035509fd616f",
+          "mapName": "A Rainbolt World"
+        },
+        "nmpzDuels": {
+          "mapId": "643dbc7ccc47d3a344307998",
+          "mapName": "An Arbitrary Rural World"
+        }
+      }
+    },
+    {
+      "divisionNumber": 4,
+      "divisionRank": 6,
+      "tier": "Gold",
+      "name": "Gold I",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.2,
+      "demotionPercentage": 0.23,
+      "doublePromotionPercentage": 0,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "698ef135b77fb917bcdf8425",
+          "mapName": "A Modified Moving World"
+        },
+        "noMoveDuels": {
+          "mapId": "62a44b22040f04bd36e8a914",
+          "mapName": "A Community World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 5,
+      "divisionRank": 7,
+      "tier": "Gold",
+      "name": "Gold II",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.24,
+      "demotionPercentage": 0.23,
+      "doublePromotionPercentage": 0.07,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "698ef135b77fb917bcdf8425",
+          "mapName": "A Modified Moving World"
+        },
+        "noMoveDuels": {
+          "mapId": "62a44b22040f04bd36e8a914",
+          "mapName": "A Community World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 6,
+      "divisionRank": 8,
+      "tier": "Gold",
+      "name": "Gold III",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.27,
+      "demotionPercentage": 0.23,
+      "doublePromotionPercentage": 0.07,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "698ef135b77fb917bcdf8425",
+          "mapName": "A Modified Moving World"
+        },
+        "noMoveDuels": {
+          "mapId": "62a44b22040f04bd36e8a914",
+          "mapName": "A Community World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 13,
+      "divisionRank": 9,
+      "tier": "Gold",
+      "name": "Gold IV",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.33,
+      "demotionPercentage": 0.2,
+      "doublePromotionPercentage": 0.1,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "698ef135b77fb917bcdf8425",
+          "mapName": "A Modified Moving World"
+        },
+        "noMoveDuels": {
+          "mapId": "62a44b22040f04bd36e8a914",
+          "mapName": "A Community World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 7,
+      "divisionRank": 10,
+      "tier": "Silver",
+      "name": "Silver I",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.4,
+      "demotionPercentage": 0.2,
+      "doublePromotionPercentage": 0.1,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 8,
+      "divisionRank": 11,
+      "tier": "Silver",
+      "name": "Silver II",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.43,
+      "demotionPercentage": 0.2,
+      "doublePromotionPercentage": 0.1,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 9,
+      "divisionRank": 12,
+      "tier": "Silver",
+      "name": "Silver III",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.5,
+      "demotionPercentage": 0.1,
+      "doublePromotionPercentage": 0.1,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 14,
+      "divisionRank": 13,
+      "tier": "Silver",
+      "name": "Silver IV",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.6,
+      "demotionPercentage": 0,
+      "doublePromotionPercentage": 0.17,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 10,
+      "divisionRank": 14,
+      "tier": "Bronze",
+      "name": "Bronze I",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.67,
+      "demotionPercentage": 0,
+      "doublePromotionPercentage": 0.17,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 15,
+      "divisionRank": 15,
+      "tier": "Bronze",
+      "name": "Bronze II",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.67,
+      "demotionPercentage": 0,
+      "doublePromotionPercentage": 0.2,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 16,
+      "divisionRank": 16,
+      "tier": "Bronze",
+      "name": "Bronze III",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.77,
+      "demotionPercentage": 0,
+      "doublePromotionPercentage": 0.3,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    },
+    {
+      "divisionNumber": 17,
+      "divisionRank": 17,
+      "tier": "Bronze",
+      "name": "Bronze IV",
+      "pointCategories": {
+        "winWithinWeeklyCap": 90,
+        "winRounds": 10
+      },
+      "promotionPercentage": 0.8,
+      "demotionPercentage": 0,
+      "doublePromotionPercentage": 0.3,
+      "bucketSortedBy": "Points",
+      "gameModes": [
+        "StandardDuels",
+        "NoMoveDuels"
+      ],
+      "numberOfGames": null,
+      "maps": {
+        "standardDuels": {
+          "mapId": "66ca0ac26929fff14a1371b6",
+          "mapName": "An Extensive Urban World"
+        },
+        "noMoveDuels": {
+          "mapId": "6983611e411dbe3f3b2a8c5b",
+          "mapName": "A Figsy World"
+        }
+      },
+      "dailyBoostTokens": 12
+    }
+  ]
+}
