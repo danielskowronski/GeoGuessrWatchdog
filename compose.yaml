@@ -1,0 +1,102 @@
+---
+services:
+  postgres-temporal:
+    networks:
+      - appnet
+    image: postgres:17
+    env_file:
+      - postgres_temporal.env
+    command: ["postgres", "-p", "5433"]
+    ports:
+      - "5433:5433"
+    volumes:
+      - pgdata_temporal:/var/lib/postgresql/data
+
+  temporal:
+    networks:
+      - appnet
+    image: temporalio/auto-setup:1.27
+    env_file:
+      - postgres_temporal.env
+    environment:
+      DB: postgres12
+      DB_PORT: 5433
+      POSTGRES_SEEDS: postgres-temporal # hostname
+    ports:
+      - "7233:7233"
+    
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "127.0.0.1:7233"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  temporal-ui:
+    networks:
+      - appnet
+    image: temporalio/ui:2.37.4
+    depends_on:
+      - temporal
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8080:8080"
+  
+  postgres-app:
+    networks:
+      - appnet
+    image: postgres:17
+    env_file:
+      - postgres_app.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_app:/var/lib/postgresql/data
+      - ./internal/db/migrations:/docker-entrypoint-initdb.d:ro
+
+  gluetun:
+    networks:
+      - appnet
+    image: qmcgaw/gluetun
+    cap_add:
+      - NET_ADMIN
+    env_file:
+      - ./vpn.env
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - HTTPPROXY=on
+      - HTTPPROXY_LOG=on
+    ports:
+      - "8888:8888"
+
+  worker:
+    networks:
+      - appnet
+    build: .
+    depends_on:
+      temporal:
+        condition: service_started #service_healthy
+      postgres-app:
+        condition: service_started #service_healthy
+      gluetun:
+        condition: service_healthy
+    env_file:
+      - postgres_app.env
+      - ggwd.env
+    environment:
+      #GGWD_MODE: worker
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_NAMESPACE: default
+      HTTP_PROXY_URL: http://gluetun:8888
+
+volumes:
+  pgdata_temporal:
+  pgdata_app:
+
+
+
+networks:
+  appnet:
