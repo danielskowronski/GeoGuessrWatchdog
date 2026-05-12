@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// https://www.geoguessr.com/api/v4/ranked-system/divisions
 type DivisionsListApiResponse struct {
 	Divisions []DivisionInfoApiResponse `json:"divisions"`
 }

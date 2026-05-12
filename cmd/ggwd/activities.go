@@ -101,7 +101,7 @@ func RunMapFetch(ctx context.Context, dbURL string, httpProxyURL string, apiBase
 	}, nil
 }
 
-func (a *Activities) NotifyActivity(ctx context.Context, input NotifierInput) (NotifierResult, error) {
+func (a *Activities) NotifyAboutMapChangeActivity(ctx context.Context, input NotifierInput) (NotifierResult, error) {
 	// FIXME: implement this
 	return NotifierResult{
 		Success: true,

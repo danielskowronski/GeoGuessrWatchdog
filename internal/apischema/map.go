@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// https://www.geoguessr.com/api/maps/$MAP_ID
 type MapApiResponse struct {
 	ID               string               `json:"id"`
 	Name             string               `json:"name"`

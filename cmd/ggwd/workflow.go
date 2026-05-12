@@ -58,7 +58,7 @@ func FetchFanoutWorkflow(ctx workflow.Context, input WorkflowInput) error {
 
 	if input.TriggerNotifications {
 		// TODO: analyze results - we may skip notifier queries to db
-		if err := workflow.ExecuteActivity(ctx, (*Activities).NotifyActivity, NotifierInput{}).Get(ctx, nil); err != nil {
+		if err := workflow.ExecuteActivity(ctx, (*Activities).NotifyAboutMapChangeActivity, NotifierInput{}).Get(ctx, nil); err != nil {
 			return err
 		}
 	}
