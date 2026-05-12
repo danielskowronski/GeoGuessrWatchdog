@@ -23,7 +23,7 @@ docker compose run --rm -e GGWD_MODE=trigger worker
 example `ggwd.env`:
 
 ```
-GGWD_GG_COOKIE=...
+GGWD_geoguessrApi_cookie=...
 ```
 
 example `vpn.env` for NordVPN:
@@ -45,8 +45,6 @@ example `postgres_app.env`:
 POSTGRES_USER=app
 POSTGRES_PASSWORD=app
 POSTGRES_DB=app
-
-GGWD_DB_URL=postgres://app:app@postgres-app:5432/app?sslmode=disable
 ```
 
 example `postgres_temporal.env`:
@@ -60,3 +58,5 @@ POSTGRES_PWD=temporal
 POSTGRES_DB=temporal
 DB=temporal
 ```
+
+also update `config_dockercompose.yaml`

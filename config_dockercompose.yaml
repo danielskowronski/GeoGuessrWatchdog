@@ -1,0 +1,36 @@
+---
+database:
+  url: postgres://app:app@postgres-app:5432/app?sslmode=disable
+
+temporal:
+  address: temporal:7233
+  namespace: default
+
+geoguessrApi:
+  baseUrl: https://www.geoguessr.com/api
+  proxy: http://gluetun:8888  # or leave empty for no proxy
+  timeoutSeconds: 30
+
+notifierApi:
+  target: null  # "discord" or null to disable notifications
+  #discord:
+  #  botToken: ...
+  #  receivers:
+  #    - ...  # Discord user ID or channel ID
+
+watchdogs:
+  CompetitiveMaps:
+    enabled: true
+    scheduleFrequencyHours: 6
+    notifyAbout:
+      - divisionName: "Master I"
+        gameMode: "standardDuels"  # "standardDuels", "noMoveDuels", "nmpzDuels"
+  UserStats:
+    enabled: true
+    scheduleDaily:  # UTC time
+      hour: 4
+      minute: 0
+    observeUsers:
+      - 61edaa9efa85ad00017053a9
+      - 697d2a096c742e51d792220a
+      - 5ff2cfa24d5c0400011fc340

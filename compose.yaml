@@ -87,10 +87,9 @@ services:
       - postgres_app.env
       - ggwd.env
     environment:
-      #GGWD_MODE: worker
-      TEMPORAL_ADDRESS: temporal:7233
-      TEMPORAL_NAMESPACE: default
-      HTTP_PROXY_URL: http://gluetun:8888
+      GGWD_MODE: worker
+    volumes:
+      - ./config_dockercompose.yaml:/etc/ggwd/config.yaml:ro
 
 volumes:
   pgdata_temporal:

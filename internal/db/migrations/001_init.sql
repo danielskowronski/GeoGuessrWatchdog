@@ -58,3 +58,5 @@ CREATE TABLE IF NOT EXISTS map_history (
 );
 CREATE INDEX IF NOT EXISTS map_history_map_id_idx
   ON map_history (map_id);
+
+-- TODO: table for notifier last sent notifications

@@ -8,40 +8,44 @@ import (
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+
+	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
 )
 
 func main() {
 	mode := getenv("GGWD_MODE", "worker")
 
+	configPath := getenv(CONF_PATH_ENV_VAR, DEFAULT_CONF_PATH)
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		panic(fmt.Errorf("failed to load config: %w", err))
+	}
+
 	switch mode {
 	case "worker":
-		runWorker()
-	case "trigger":
-		triggerWorkflow()
-	case "schedule":
-		createSchedule()
+		runWorker(cfg)
+	case "trigger": // FIXME: this will need to select which workflow
+		triggerWorkflow(cfg)
+	case "schedule": // FIXME: this will need to configure schedules as per config; also this should be moved to worker init
+		createSchedule(cfg)
 	default:
 		panic("unknown GGWD_MODE: " + mode)
 	}
 }
 
-func genActivities() *Activities {
-	// TODO: maybe this should be also configurable via config file?
-	return &Activities{
-		DatabaseURL:      mustEnv("GGWD_DB_URL"),
-		HttpProxyURL:     getenv("HTTP_PROXY_URL", ""),
-		GeoGuessrApiBase: getenv("GGWD_GG_API_BASE", GG_API_DEFAULT_BASE),
-		GeoGuessrCookie:  mustEnv("GGWD_GG_COOKIE"),
-	}
-}
-
-func runWorker() {
-	c := mustTemporalClient()
+func runWorker(cfg *config.Config) {
+	c := mustTemporalClient(cfg.Temporal)
 	defer c.Close()
 
 	w := worker.New(c, taskQueue(), worker.Options{})
 
-	acts := genActivities()
+	acts := &Activities{
+		DatabaseURL:      cfg.Database.URL,
+		HttpProxyURL:     cfg.GeoguessrAPI.Proxy,
+		GeoGuessrApiBase: cfg.GeoguessrAPI.BaseURL,
+		GeoGuessrCookie:  cfg.GeoguessrAPI.Cookie,
+	}
+	fmt.Println(cfg.GeoguessrAPI.Cookie)
 	w.RegisterWorkflow(FetchFanoutWorkflow)
 	w.RegisterActivity(acts)
 
@@ -50,8 +54,8 @@ func runWorker() {
 	}
 }
 
-func triggerWorkflow() {
-	c := mustTemporalClient()
+func triggerWorkflow(cfg *config.Config) {
+	c := mustTemporalClient(cfg.Temporal)
 	defer c.Close()
 
 	input := WorkflowInput{
@@ -73,8 +77,8 @@ func triggerWorkflow() {
 	fmt.Printf("started workflow_id=%s run_id=%s\n", run.GetID(), run.GetRunID())
 }
 
-func createSchedule() {
-	c := mustTemporalClient()
+func createSchedule(cfg *config.Config) {
+	c := mustTemporalClient(cfg.Temporal)
 	defer c.Close()
 
 	scheduleID := getenv("SCHEDULE_ID", "api-fetch-every-6h")
@@ -106,10 +110,10 @@ func createSchedule() {
 	fmt.Printf("created schedule_id=%s\n", handle.GetID())
 }
 
-func mustTemporalClient() client.Client {
+func mustTemporalClient(cfg config.TemporalConfig) client.Client {
 	c, err := client.Dial(client.Options{
-		HostPort:  mustEnv("TEMPORAL_ADDRESS"),
-		Namespace: getenv("TEMPORAL_NAMESPACE", "default"),
+		HostPort:  cfg.Address,
+		Namespace: cfg.Namespace,
 	})
 	if err != nil {
 		panic(err)
