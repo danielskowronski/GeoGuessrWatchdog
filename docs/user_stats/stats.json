@@ -1,0 +1,35 @@
+{
+  "divisionNumber": 1,
+  "divisionName": "Champion",
+  "rating": 1937,
+  "tier": "Champion",
+  "gameModeRatings": {
+    "standardDuels": 1617,
+    "noMoveDuels": 1788,
+    "nmpzDuels": 1540
+  },
+  "guessedFirstRate": 0.43032370407370407,
+  "winStreak": 0,
+  "latestGames": [
+    false,
+    true,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true
+  ],
+  "bestCountries": [
+    "ca",
+    "ru",
+    "ar"
+  ],
+  "worstCountries": [
+    "ua",
+    "lv",
+    "il"
+  ]
+}

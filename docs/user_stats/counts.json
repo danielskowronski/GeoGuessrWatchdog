@@ -1,0 +1,177 @@
+{
+  "rankedTeamDuelsStandard": {
+    "numGamesPlayed": 0,
+    "numWins": 0,
+    "winRatio": 0
+  },
+  "rankedTeamDuelsNoMove": {
+    "numGamesPlayed": 0,
+    "numWins": 0,
+    "winRatio": 0
+  },
+  "rankedTeamDuelsNmpz": {
+    "numGamesPlayed": 0,
+    "numWins": 0,
+    "winRatio": 0
+  },
+  "rankedTeamDuelsTotal": {
+    "numGamesPlayed": 0,
+    "numWins": 0,
+    "winRatio": 0
+  },
+  "battleRoyaleDistance": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0
+  },
+  "battleRoyaleCountry": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "numGuesses": 0,
+    "avgCorrectGuesses": 0
+  },
+  "battleRoyaleMedals": {
+    "medalCountGold": 0,
+    "medalCountSilver": 0,
+    "medalCountBronze": 0
+  },
+  "competitiveCityStreaks": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "numGuesses": 0,
+    "avgCorrectGuesses": 0
+  },
+  "competitiveStreaksMedals": {
+    "medalCountGold": 0,
+    "medalCountSilver": 0,
+    "medalCountBronze": 0
+  },
+  "duels": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "duelsNoMove": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "duelsNmpz": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "duelsTotal": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "duelsMedals": {
+    "medalCountGold": 0,
+    "medalCountSilver": 0,
+    "medalCountBronze": 0
+  },
+  "unrankedDuels": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "unrankedDuelsNoMove": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "unrankedDuelsNmpz": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "unrankedDuelsTotal": {
+    "numGamesPlayed": 0,
+    "avgPosition": 0,
+    "numWins": 0,
+    "winRatio": 0,
+    "avgGuessDistance": 0,
+    "numGuesses": 0,
+    "numFlawlessWins": 0
+  },
+  "lifeTimeXpProgression": {
+    "xp": 0,
+    "currentLevel": {
+      "level": 1,
+      "xpStart": 0
+    },
+    "nextLevel": {
+      "level": 2,
+      "xpStart": 150
+    },
+    "currentTitle": {
+      "id": 10,
+      "tierId": 10,
+      "minimumLevel": 0,
+      "name": "Rookie Tourist"
+    }
+  },
+  "totalMedals": {
+    "medalCountGold": 0,
+    "medalCountSilver": 0,
+    "medalCountBronze": 0
+  },
+  "teamDuels": {
+    "numGamesPlayed": 0,
+    "numWins": 0,
+    "winRatio": 0
+  },
+  "teamDuelsQuickplay": {
+    "numGamesPlayed": 0,
+    "numWins": 0
+  },
+  "quickplayFlawlessVictories": 0,
+  "perfectRounds": 0,
+  "party": {
+    "total": 0,
+    "duels": 0,
+    "teamDuels": 0,
+    "battleRoyaleCountries": 0,
+    "battleRoyaleDistance": 0,
+    "cityStreaks": 0,
+    "liveChallenges": 0,
+    "bullseye": 0,
+    "quizzes": 0
+  }
+}
