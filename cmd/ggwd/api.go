@@ -97,3 +97,31 @@ func (a *ApiClient) FetchMapInfo(ctx context.Context, mapID string) (*apischema.
 
 	return mapInfo, code, nil
 }
+
+func (a *ApiClient) FetchUserProgress(ctx context.Context, userID string) (*apischema.ProgressInfo, int, error) {
+	body, code, err := a.FetchJSON(ctx, a.apiBase+fmt.Sprintf(GG_API_PATH_USER_PROGRESS, userID))
+	if err != nil {
+		return nil, code, err
+	}
+
+	progressInfo, err := apischema.DecodeApiResponseProgress(body)
+	if err != nil {
+		return nil, code, fmt.Errorf("failed to decode API response: %w", err)
+	}
+
+	return progressInfo, code, nil
+}
+
+func (a *ApiClient) FetchUserStats(ctx context.Context, userID string) (*apischema.StatsInfo, int, error) {
+	body, code, err := a.FetchJSON(ctx, a.apiBase+fmt.Sprintf(GG_API_PATH_USER_STATS, userID))
+	if err != nil {
+		return nil, code, err
+	}
+
+	statsInfo, err := apischema.DecodeApiResponseStats(body)
+	if err != nil {
+		return nil, code, fmt.Errorf("failed to decode API response: %w", err)
+	}
+
+	return statsInfo, code, nil
+}

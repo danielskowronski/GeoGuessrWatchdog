@@ -1,6 +1,6 @@
 # User stats - competitive games
 
-## Game counts
+## Game counts (stats)
 
 URL is `https://www.geoguessr.com/api/v4/stats/users/USER_ID` and example response is at [counts.json](./counts.json)
 
@@ -49,7 +49,7 @@ Some may contain additionaly:
 
 The goal of watching this API is to track daily number of games. To make it faily universal, all known competitive game modes must be tracked. It also makes sense to treat one API fetch as one target row in DB. From this perspective, we'll need 16x3 columns to match each game mode to 3 fields.
 
-## Game stats
+## Game stats (progress)
 
 URL is `https://www.geoguessr.com/api/v4/ranked-system/progress/USER_ID` and example response is at [stats.json](./stats.json)
 

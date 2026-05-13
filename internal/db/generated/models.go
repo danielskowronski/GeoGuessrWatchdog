@@ -52,3 +52,51 @@ type MapInfo struct {
 	LocationCount  int64
 	LastChanged    pgtype.Timestamptz
 }
+
+type UserProgressHistory struct {
+	ID             int64
+	UserID         string
+	DivisionName   string
+	DivisionNumber int32
+	RatingOverall  int32
+	RatingMoving   int32
+	RatingNomove   int32
+	RatingNmpz     int32
+	GuessedFirst   float64
+	BestCountries  string
+	WorstCountries string
+	Timestamp      pgtype.Timestamptz
+}
+
+type UserStatsHistory struct {
+	ID                      int64
+	UserID                  string
+	RankedTeamMovingGames   int64
+	RankedTeamMovingWins    int64
+	RankedTeamMovingRatio   float64
+	RankedTeamNomoveGames   int64
+	RankedTeamNomoveWins    int64
+	RankedTeamNomoveRatio   float64
+	RankedTeamNmpzGames     int64
+	RankedTeamNmpzWins      int64
+	RankedTeamNmpzRatio     float64
+	RankedSoloMovingGames   int64
+	RankedSoloMovingWins    int64
+	RankedSoloMovingRatio   float64
+	RankedSoloNomoveGames   int64
+	RankedSoloNomoveWins    int64
+	RankedSoloNomoveRatio   float64
+	RankedSoloNmpzGames     int64
+	RankedSoloNmpzWins      int64
+	RankedSoloNmpzRatio     float64
+	UnrankedSoloMovingGames int64
+	UnrankedSoloMovingWins  int64
+	UnrankedSoloMovingRatio float64
+	UnrankedSoloNomoveGames int64
+	UnrankedSoloNomoveWins  int64
+	UnrankedSoloNomoveRatio float64
+	UnrankedSoloNmpzGames   int64
+	UnrankedSoloNmpzWins    int64
+	UnrankedSoloNmpzRatio   float64
+	Timestamp               pgtype.Timestamptz
+}

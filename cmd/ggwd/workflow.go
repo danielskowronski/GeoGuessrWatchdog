@@ -7,18 +7,24 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func FetchFanoutWorkflow(ctx workflow.Context, input WorkflowInput) error {
-	if input.MaxParallel <= 0 {
-		input.MaxParallel = 2
-	}
+// TODO: DRY!
 
-	activityOptions := workflow.ActivityOptions{ // TODO: parametrize these timeouts and retry policies
-		StartToCloseTimeout: 1 * time.Minute,
+type WorkflowEnum int
+
+const (
+	WorkflowEnumFetchDivisionsMaps WorkflowEnum = iota
+	WorkflowEnumFetchUserStatsAndProgress
+)
+
+func FetchDivisionsMapsWorkflow(ctx workflow.Context, input FetchDivisionsMapsWorkflowInput) error {
+
+	activityOptions := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(input.TemporalOptions.FanoutActivity.StartToCloseTimeoutSeconds) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
-			InitialInterval:    5 * time.Second,
-			BackoffCoefficient: 2,
-			MaximumInterval:    1 * time.Minute,
-			MaximumAttempts:    3,
+			InitialInterval:    time.Duration(input.TemporalOptions.FanoutActivity.RetryInitialIntervalSeconds) * time.Second,
+			BackoffCoefficient: input.TemporalOptions.FanoutActivity.RetryBackoffCoefficient,
+			MaximumInterval:    time.Duration(input.TemporalOptions.FanoutActivity.RetryMaximumIntervalSeconds) * time.Second,
+			MaximumAttempts:    int32(input.TemporalOptions.FanoutActivity.RetryMaximumAttempts),
 		},
 	}
 
@@ -32,8 +38,8 @@ func FetchFanoutWorkflow(ctx workflow.Context, input WorkflowInput) error {
 
 		mapFetchResults := make([]MapFetchResult, 0, len(divisionFetchResult.UniqueMaps))
 		if input.TriggerMapUpdates {
-			for start := 0; start < len(divisionFetchResult.UniqueMaps); start += input.MaxParallel {
-				end := start + input.MaxParallel
+			for start := 0; start < len(divisionFetchResult.UniqueMaps); start += input.TemporalOptions.Parallelism {
+				end := start + input.TemporalOptions.Parallelism
 				if end > len(divisionFetchResult.UniqueMaps) {
 					end = len(divisionFetchResult.UniqueMaps)
 				}
@@ -63,5 +69,64 @@ func FetchFanoutWorkflow(ctx workflow.Context, input WorkflowInput) error {
 		}
 	}
 
+	return nil
+}
+
+func FetchUserStatsAndProgressWorkflow(ctx workflow.Context, input FetchUserStatsAndProgressWorkflowInput) error {
+
+	activityOptions := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(input.TemporalOptions.FanoutActivity.StartToCloseTimeoutSeconds) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    time.Duration(input.TemporalOptions.FanoutActivity.RetryInitialIntervalSeconds) * time.Second,
+			BackoffCoefficient: input.TemporalOptions.FanoutActivity.RetryBackoffCoefficient,
+			MaximumInterval:    time.Duration(input.TemporalOptions.FanoutActivity.RetryMaximumIntervalSeconds) * time.Second,
+			MaximumAttempts:    int32(input.TemporalOptions.FanoutActivity.RetryMaximumAttempts),
+		},
+	}
+
+	ctx = workflow.WithActivityOptions(ctx, activityOptions)
+
+	if input.TriggerUserStats {
+		for start := 0; start < len(input.UsersList); start += input.TemporalOptions.Parallelism {
+			end := start + input.TemporalOptions.Parallelism
+			if end > len(input.UsersList) {
+				end = len(input.UsersList)
+			}
+			batch := input.UsersList[start:end]
+			futures := make([]workflow.Future, 0, len(batch))
+			for _, userID := range batch {
+				f := workflow.ExecuteActivity(ctx, (*Activities).UserStatsFetchActivity, UserStatsFetchInput{
+					UserID: userID,
+				})
+				futures = append(futures, f)
+			}
+			for _, f := range futures {
+				if err := f.Get(ctx, nil); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	if input.TriggerUserProgress {
+		for start := 0; start < len(input.UsersList); start += input.TemporalOptions.Parallelism {
+			end := start + input.TemporalOptions.Parallelism
+			if end > len(input.UsersList) {
+				end = len(input.UsersList)
+			}
+			batch := input.UsersList[start:end]
+			futures := make([]workflow.Future, 0, len(batch))
+			for _, userID := range batch {
+				f := workflow.ExecuteActivity(ctx, (*Activities).UserProgressFetchActivity, UserProgressFetchInput{
+					UserID: userID,
+				})
+				futures = append(futures, f)
+			}
+			for _, f := range futures {
+				if err := f.Get(ctx, nil); err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }

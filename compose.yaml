@@ -22,6 +22,7 @@ services:
       DB: postgres12
       DB_PORT: 5433
       POSTGRES_SEEDS: postgres-temporal # hostname
+      DEFAULT_NAMESPACE_RETENTION: 30d
     ports:
       - "7233:7233"
     
@@ -86,8 +87,8 @@ services:
     env_file:
       - postgres_app.env
       - ggwd.env
-    environment:
-      GGWD_MODE: worker
+    command:
+      - worker
     volumes:
       - ./config_dockercompose.yaml:/etc/ggwd/config.yaml:ro
 

@@ -51,10 +51,10 @@ type WatchdogsConfig struct {
 }
 
 type WatchdogCompetitiveMaps struct {
-	Enabled                 bool                            `koanf:"enabled"`
-	SscheduleFrequencyHours int                             `koanf:"scheduleFrequencyHours"`
-	NotifyAbout             []NotifyAboutDivisionModeConfig `koanf:"notifyAbout"`
-	Temporal                TemporalAdvanced                `koanf:"temporalAdvanced"`
+	Enabled                bool                            `koanf:"enabled"`
+	ScheduleFrequencyHours int                             `koanf:"scheduleFrequencyHours"`
+	NotifyAbout            []NotifyAboutDivisionModeConfig `koanf:"notifyAbout"`
+	Temporal               TemporalAdvanced                `koanf:"temporalAdvanced"`
 }
 
 type ScheduleDailyConfig struct {
@@ -74,10 +74,10 @@ type TemporalAdvanced struct {
 }
 
 type WatchdogUserStats struct {
-	Enabled          bool                `koanf:"enabled"`
-	ScheduleDaily    ScheduleDailyConfig `koanf:"scheduleDaily"`
-	ObserveUsers     []string            `koanf:"observeUsers"`
-	TemporalAdvanced TemporalAdvanced    `koanf:"temporalAdvanced"`
+	Enabled       bool                `koanf:"enabled"`
+	ScheduleDaily ScheduleDailyConfig `koanf:"scheduleDaily"`
+	ObserveUsers  []string            `koanf:"observeUsers"`
+	Temporal      TemporalAdvanced    `koanf:"temporalAdvanced"`
 }
 
 type ActivityConfig struct {
@@ -150,6 +150,20 @@ func Load(path string) (*Config, error) {
 		TransformFunc: func(key string, value string) (string, any) {
 			key = strings.TrimPrefix(key, ENV_VAR_PREFIX)
 			key = strings.ReplaceAll(key, "_", ".")
+
+			if key == "watchdogs.CompetitiveMaps.notifyAbout" || key == "watchdogs.UserStats.observeUsers" {
+				// split by comma for these list values
+				parts := strings.Split(value, ",")
+				values := make([]string, 0, len(parts))
+				for _, part := range parts {
+					part = strings.TrimSpace(part)
+					if part != "" {
+						values = append(values, part)
+					}
+				}
+				return key, values
+			}
+
 			return key, value
 		},
 	}), nil); err != nil {

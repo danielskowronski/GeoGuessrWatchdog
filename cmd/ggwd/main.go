@@ -10,104 +10,230 @@ import (
 	"go.temporal.io/sdk/worker"
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	mode := getenv("GGWD_MODE", "worker")
+func getenv(name string, fallback string) string {
+	value := os.Getenv(name)
+	if value == "" {
+		return fallback
+	}
+	return value
+}
 
+func loadConfig() (config.Config, error) {
 	configPath := getenv(CONF_PATH_ENV_VAR, DEFAULT_CONF_PATH)
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		panic(fmt.Errorf("failed to load config: %w", err))
+		return config.Config{}, fmt.Errorf("failed to load config: %w", err)
+	}
+	return *cfg, nil
+}
+
+func main() {
+	rootCmd := &cobra.Command{
+		Use:   "ggwd",
+		Short: "GeoGuessrWatchdog - Temporal worker and CLI for GeoGuessr ranked stats monitoring",
 	}
 
-	switch mode {
-	case "worker":
-		runWorker(cfg)
-	case "trigger": // FIXME: this will need to select which workflow
-		triggerWorkflow(cfg)
-	case "schedule": // FIXME: this will need to configure schedules as per config; also this should be moved to worker init
-		createSchedule(cfg)
-	default:
-		panic("unknown GGWD_MODE: " + mode)
+	rootCmd.AddCommand(workerCmd())
+	rootCmd.AddCommand(triggerWorkflowCmd())
+	rootCmd.AddCommand(triggerActivityCmd())
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
 
-func runWorker(cfg *config.Config) {
+func startWorker() error {
+	cfg, err := loadConfig()
+	if err != nil {
+		panic(fmt.Sprintf("failed to load config: %v", err))
+	}
+
 	c := mustTemporalClient(cfg.Temporal)
 	defer c.Close()
 
-	w := worker.New(c, taskQueue(), worker.Options{})
-
-	acts := &Activities{
-		DatabaseURL:      cfg.Database.URL,
-		HttpProxyURL:     cfg.GeoguessrAPI.Proxy,
-		GeoGuessrApiBase: cfg.GeoguessrAPI.BaseURL,
-		GeoGuessrCookie:  cfg.GeoguessrAPI.Cookie,
+	fmt.Println("ensuring schedules...")
+	err = EnsureFetchDivisionsMapsSchedule(context.Background(), c, cfg)
+	if err != nil {
+		panic(fmt.Sprintf("failed to ensure schedules: %v", err))
 	}
-	fmt.Println(cfg.GeoguessrAPI.Cookie)
-	w.RegisterWorkflow(FetchFanoutWorkflow)
+	err = EnsureFetchUserStatsAndProgressSchedule(context.Background(), c, cfg)
+	if err != nil {
+		panic(fmt.Sprintf("failed to ensure schedules: %v", err))
+	}
+
+	w := worker.New(c, cfg.Temporal.TaskQueue, worker.Options{})
+	acts := &Activities{
+		Config: cfg,
+	}
+	w.RegisterWorkflow(FetchDivisionsMapsWorkflow)
+	w.RegisterWorkflow(FetchUserStatsAndProgressWorkflow)
 	w.RegisterActivity(acts)
+	fmt.Println("starting Temporal worker...")
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		panic(err)
 	}
+
+	return nil
 }
 
-func triggerWorkflow(cfg *config.Config) {
+func workerCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "worker",
+		Short: "Start Temporal worker",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return startWorker()
+		},
+	}
+}
+
+func startWorkflow(Workflow WorkflowEnum) error {
+	cfg, err := loadConfig()
+	if err != nil {
+		panic(fmt.Sprintf("failed to load config: %v", err))
+	}
 	c := mustTemporalClient(cfg.Temporal)
 	defer c.Close()
 
-	input := WorkflowInput{
-		TriggerApiUpdates:    true,
-		TriggerMapUpdates:    true,
-		TriggerNotifications: true,
+	workflowIdElement := "unknown"
+	switch Workflow {
+	case WorkflowEnumFetchDivisionsMaps:
+		workflowIdElement = "FetchDivisionsMaps"
+	case WorkflowEnumFetchUserStatsAndProgress:
+		workflowIdElement = "FetchUserStatsAndProgress"
 	}
-
 	opts := client.StartWorkflowOptions{
-		ID:        fmt.Sprintf("manual-%d", time.Now().Unix()),
-		TaskQueue: taskQueue(),
+		ID:        fmt.Sprintf("manual-%s-%d", workflowIdElement, time.Now().Unix()),
+		TaskQueue: cfg.Temporal.TaskQueue,
+	}
+	var run client.WorkflowRun
+	var runErr error
+	switch Workflow {
+	case WorkflowEnumFetchDivisionsMaps:
+		input := FetchDivisionsMapsWorkflowInput{
+			TriggerApiUpdates:    true,
+			TriggerMapUpdates:    true,
+			TriggerNotifications: true,
+			TemporalOptions:      cfg.Watchdogs.CompetitiveMaps.Temporal,
+		}
+		run, runErr = c.ExecuteWorkflow(context.Background(), opts, FetchDivisionsMapsWorkflow, input)
+	case WorkflowEnumFetchUserStatsAndProgress:
+		input := FetchUserStatsAndProgressWorkflowInput{
+			TriggerUserStats:    true,
+			TriggerUserProgress: true,
+			UsersList:           cfg.Watchdogs.UserStats.ObserveUsers,
+			TemporalOptions:     cfg.Watchdogs.UserStats.Temporal,
+		}
+		run, runErr = c.ExecuteWorkflow(context.Background(), opts, FetchUserStatsAndProgressWorkflow, input)
+	default:
+		return fmt.Errorf("unknown workflow: %v", Workflow)
 	}
 
-	run, err := c.ExecuteWorkflow(context.Background(), opts, FetchFanoutWorkflow, input)
-	if err != nil {
-		panic(err)
+	if runErr != nil {
+		panic(runErr)
 	}
 
 	fmt.Printf("started workflow_id=%s run_id=%s\n", run.GetID(), run.GetRunID())
+	return nil
 }
 
-func createSchedule(cfg *config.Config) {
-	c := mustTemporalClient(cfg.Temporal)
-	defer c.Close()
-
-	scheduleID := getenv("SCHEDULE_ID", "api-fetch-every-6h")
-
-	input := WorkflowInput{
-		TriggerApiUpdates:    true,
-		TriggerMapUpdates:    true,
-		TriggerNotifications: true,
+func triggerWorkflowCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "trigger-workflow",
+		Short: "Trigger Temporal workflows",
 	}
 
-	handle, err := c.ScheduleClient().Create(context.Background(), client.ScheduleOptions{
-		ID: scheduleID,
-		Spec: client.ScheduleSpec{
-			Intervals: []client.ScheduleIntervalSpec{
-				{Every: 6 * time.Hour},
-			},
-		},
-		Action: &client.ScheduleWorkflowAction{
-			ID:        "scheduled-api-fetch",
-			Workflow:  FetchFanoutWorkflow,
-			TaskQueue: taskQueue(),
-			Args:      []any{input},
+	cmd.AddCommand(&cobra.Command{
+		Use:   "FetchDivisionsMaps",
+		Short: "Trigger FetchDivisionsMaps workflow",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("trigger workflow: FetchDivisionsMaps")
+			return startWorkflow(WorkflowEnumFetchDivisionsMaps)
 		},
 	})
-	if err != nil {
-		panic(err)
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "FetchUserStatsAndProgress",
+		Short: "Trigger FetchUserStatsAndProgress workflow",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("trigger workflow: FetchUserStatsAndProgress")
+			return startWorkflow(WorkflowEnumFetchUserStatsAndProgress)
+		},
+	})
+
+	return cmd
+}
+
+// TODO: runActivity with params
+
+func triggerActivityCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "trigger-activity",
+		Short: "Trigger Temporal activities directly",
 	}
 
-	fmt.Printf("created schedule_id=%s\n", handle.GetID())
+	cmd.AddCommand(&cobra.Command{
+		Use:   "FetchDivision",
+		Short: "Trigger FetchDivision activity",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("trigger activity: FetchDivision")
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "FetchMap <map-id>",
+		Short: "Trigger FetchMap activity",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			mapID := args[0]
+			fmt.Println("trigger activity: FetchMap", mapID)
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "NotifyMap <map-id> <message>",
+		Short: "Trigger NotifyMap activity",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			mapID := args[0]
+			message := args[1]
+			fmt.Println("trigger activity: NotifyMap", mapID, message)
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "FetchUserStats <user-id>",
+		Short: "Trigger FetchUserStats activity",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			userID := args[0]
+			fmt.Println("trigger activity: FetchUserStats", userID)
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "FetchUserHistory <user-id>",
+		Short: "Trigger FetchUserHistory activity",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			userID := args[0]
+			fmt.Println("trigger activity: FetchUserHistory", userID)
+			return nil
+		},
+	})
+
+	return cmd
 }
 
 func mustTemporalClient(cfg config.TemporalConfig) client.Client {
@@ -120,23 +246,4 @@ func mustTemporalClient(cfg config.TemporalConfig) client.Client {
 	}
 
 	return c
-}
-
-func taskQueue() string {
-	return getenv("TEMPORAL_TASK_QUEUE", "ggwd-task-queue")
-}
-func mustEnv(name string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		panic("missing env var: " + name)
-	}
-	return value
-}
-
-func getenv(name string, fallback string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		return fallback
-	}
-	return value
 }

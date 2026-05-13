@@ -59,4 +59,62 @@ CREATE TABLE IF NOT EXISTS map_history (
 CREATE INDEX IF NOT EXISTS map_history_map_id_idx
   ON map_history (map_id);
 
+CREATE TABLE IF NOT EXISTS user_progress_history (
+  id BIGSERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+
+  division_name TEXT NOT NULL,
+  division_number INT NOT NULL,
+  rating_overall INT NOT NULL,
+  rating_moving INT NOT NULL,
+  rating_nomove INT NOT NULL,
+  rating_nmpz INT NOT NULL,
+  guessed_first DOUBLE PRECISION NOT NULL,
+  best_countries TEXT NOT NULL,
+  worst_countries TEXT NOT NULL,
+
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS user_progress_history_user_id_idx
+  ON user_progress_history (user_id);
+
+CREATE TABLE IF NOT EXISTS user_stats_history (
+  id BIGSERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+
+  ranked_team_moving_games BIGINT NOT NULL,
+  ranked_team_moving_wins  BIGINT NOT NULL,
+  ranked_team_moving_ratio DOUBLE PRECISION NOT NULL,
+  ranked_team_nomove_games BIGINT NOT NULL,
+  ranked_team_nomove_wins  BIGINT NOT NULL,
+  ranked_team_nomove_ratio DOUBLE PRECISION NOT NULL,
+  ranked_team_nmpz_games BIGINT NOT NULL,
+  ranked_team_nmpz_wins  BIGINT NOT NULL,
+  ranked_team_nmpz_ratio DOUBLE PRECISION NOT NULL,
+
+  ranked_solo_moving_games BIGINT NOT NULL,
+  ranked_solo_moving_wins  BIGINT NOT NULL,
+  ranked_solo_moving_ratio DOUBLE PRECISION NOT NULL,
+  ranked_solo_nomove_games BIGINT NOT NULL,
+  ranked_solo_nomove_wins  BIGINT NOT NULL,
+  ranked_solo_nomove_ratio DOUBLE PRECISION NOT NULL,
+  ranked_solo_nmpz_games BIGINT NOT NULL,
+  ranked_solo_nmpz_wins  BIGINT NOT NULL,
+  ranked_solo_nmpz_ratio DOUBLE PRECISION NOT NULL,
+
+  unranked_solo_moving_games BIGINT NOT NULL,
+  unranked_solo_moving_wins  BIGINT NOT NULL,
+  unranked_solo_moving_ratio DOUBLE PRECISION NOT NULL,
+  unranked_solo_nomove_games BIGINT NOT NULL,
+  unranked_solo_nomove_wins  BIGINT NOT NULL,
+  unranked_solo_nomove_ratio DOUBLE PRECISION NOT NULL,
+  unranked_solo_nmpz_games BIGINT NOT NULL,
+  unranked_solo_nmpz_wins  BIGINT NOT NULL,
+  unranked_solo_nmpz_ratio DOUBLE PRECISION NOT NULL,
+
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS user_stats_history_user_id_idx
+  ON user_stats_history (user_id);
+
 -- TODO: table for notifier last sent notifications

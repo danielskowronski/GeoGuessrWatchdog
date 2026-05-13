@@ -17,7 +17,7 @@ cd internal/db && sqlc generate; cd -
 
 ```bash
 docker compose up --build -d
-docker compose run --rm -e GGWD_MODE=trigger worker
+docker compose run --rm worker help
 ```
 
 example `ggwd.env`:

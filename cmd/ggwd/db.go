@@ -267,3 +267,77 @@ func (d *DB) UpsertMapInfo(ctx context.Context, mi apischema.MapInfo) (bool, err
 
 	return mapInfoChanged, nil
 }
+
+func (d *DB) InsertUserProgressHistory(ctx context.Context, progress apischema.ProgressInfo, userID string) (bool, error) {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return false, err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	_, err = q.InsertUserProgressHistory(ctx, db.InsertUserProgressHistoryParams{
+		UserID:         userID,
+		DivisionName:   progress.DivisionName,
+		DivisionNumber: int32(progress.DivisionNumber),
+		RatingOverall:  int32(progress.RatingOverall),
+		RatingMoving:   int32(progress.RatingMoving),
+		RatingNomove:   int32(progress.RatingNoMove),
+		RatingNmpz:     int32(progress.RatingNMPZ),
+		GuessedFirst:   progress.GuessedFirstRate,
+		BestCountries:  progress.BestCountries,
+		WorstCountries: progress.WorstCountries,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (d *DB) InsertUserStatsHistory(ctx context.Context, stats apischema.StatsInfo, userID string) (bool, error) {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return false, err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	_, err = q.InsertUserStatsHistory(ctx, db.InsertUserStatsHistoryParams{
+		UserID:                  userID,
+		RankedTeamMovingGames:   int64(stats.RankedTeamMovingGames),
+		RankedTeamMovingWins:    int64(stats.RankedTeamMovingWins),
+		RankedTeamMovingRatio:   stats.RankedTeamMovingRatio,
+		RankedTeamNomoveGames:   int64(stats.RankedTeamNoMoveGames),
+		RankedTeamNomoveWins:    int64(stats.RankedTeamNoMoveWins),
+		RankedTeamNomoveRatio:   stats.RankedTeamNoMoveRatio,
+		RankedTeamNmpzGames:     int64(stats.RankedTeamNMPZGames),
+		RankedTeamNmpzWins:      int64(stats.RankedTeamNMPZWins),
+		RankedTeamNmpzRatio:     stats.RankedTeamNMPZRatio,
+		RankedSoloMovingGames:   int64(stats.RankedSoloMovingGames),
+		RankedSoloMovingWins:    int64(stats.RankedSoloMovingWins),
+		RankedSoloMovingRatio:   stats.RankedSoloMovingRatio,
+		RankedSoloNomoveGames:   int64(stats.RankedSoloNoMoveGames),
+		RankedSoloNomoveWins:    int64(stats.RankedSoloNoMoveWins),
+		RankedSoloNomoveRatio:   stats.RankedSoloNoMoveRatio,
+		RankedSoloNmpzGames:     int64(stats.RankedSoloNMPZGames),
+		RankedSoloNmpzWins:      int64(stats.RankedSoloNMPZWins),
+		RankedSoloNmpzRatio:     stats.RankedSoloNMPZRatio,
+		UnrankedSoloMovingGames: int64(stats.UnrankedSoloMovingGames),
+		UnrankedSoloMovingWins:  int64(stats.UnrankedSoloMovingWins),
+		UnrankedSoloMovingRatio: stats.UnrankedSoloMovingRatio,
+		UnrankedSoloNomoveGames: int64(stats.UnrankedSoloNoMoveGames),
+		UnrankedSoloNomoveWins:  int64(stats.UnrankedSoloNoMoveWins),
+		UnrankedSoloNomoveRatio: stats.UnrankedSoloNoMoveRatio,
+		UnrankedSoloNmpzGames:   int64(stats.UnrankedSoloNMPZGames),
+		UnrankedSoloNmpzWins:    int64(stats.UnrankedSoloNMPZWins),
+		UnrankedSoloNmpzRatio:   stats.UnrankedSoloNMPZRatio,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

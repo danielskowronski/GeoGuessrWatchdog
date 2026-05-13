@@ -2,13 +2,16 @@ package main
 
 import (
 	"time"
+
+	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
 )
 
-type WorkflowInput struct {
+type FetchDivisionsMapsWorkflowInput struct {
 	TriggerApiUpdates    bool `json:"triggerApiUpdates,omitempty"`
 	TriggerMapUpdates    bool `json:"triggerMapUpdates,omitempty"`
-	MaxParallel          int  `json:"maxParallel,omitempty"`
 	TriggerNotifications bool `json:"triggerNotifications,omitempty"`
+
+	TemporalOptions config.TemporalAdvanced `json:"temporalOptions,omitempty"`
 }
 
 type DivisionFetchInput struct {
@@ -36,4 +39,33 @@ type NotifierInput struct {
 }
 type NotifierResult struct {
 	Success bool `json:"success"`
+}
+
+type FetchUserStatsAndProgressWorkflowInput struct {
+	TriggerUserStats    bool `json:"triggerUserStats,omitempty"`
+	TriggerUserProgress bool `json:"triggerUserProgress,omitempty"`
+
+	UsersList []string `json:"usersList,omitempty"`
+
+	TemporalOptions config.TemporalAdvanced `json:"temporalOptions,omitempty"`
+}
+
+type UserProgressFetchInput struct {
+	UserID string `json:"user_id"`
+}
+
+type UserProgressFetchOutput struct {
+	ApiResultCode int       `json:"api_result_code"`
+	RatingOverall uint64    `json:"rating_overall"`
+	FetchedAt     time.Time `json:"fetched_at"`
+}
+
+type UserStatsFetchInput struct {
+	UserID string `json:"user_id"`
+}
+
+type UserStatsFetchOutput struct {
+	ApiResultCode int       `json:"api_result_code"`
+	GamesCount    uint64    `json:"games_count"`
+	FetchedAt     time.Time `json:"fetched_at"`
 }
