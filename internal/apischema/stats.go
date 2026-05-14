@@ -94,41 +94,32 @@ type PartyResponse struct {
 }
 
 type StatsInfo struct {
-	RankedTeamMovingGames uint64  `json:"rankedTeamMovingGames"`
-	RankedTeamMovingWins  uint64  `json:"rankedTeamMovingWins"`
-	RankedTeamMovingRatio float64 `json:"rankedTeamMovingRatio"`
+	RankedTeamMovingGames uint64 `json:"rankedTeamMovingGames"`
+	RankedTeamMovingWins  uint64 `json:"rankedTeamMovingWins"`
 
-	RankedTeamNoMoveGames uint64  `json:"rankedTeamNoMoveGames"`
-	RankedTeamNoMoveWins  uint64  `json:"rankedTeamNoMoveWins"`
-	RankedTeamNoMoveRatio float64 `json:"rankedTeamNoMoveRatio"`
+	RankedTeamNoMoveGames uint64 `json:"rankedTeamNoMoveGames"`
+	RankedTeamNoMoveWins  uint64 `json:"rankedTeamNoMoveWins"`
 
-	RankedTeamNMPZGames uint64  `json:"rankedTeamNMPZGames"`
-	RankedTeamNMPZWins  uint64  `json:"rankedTeamNMPZWins"`
-	RankedTeamNMPZRatio float64 `json:"rankedTeamNMPZRatio"`
+	RankedTeamNMPZGames uint64 `json:"rankedTeamNMPZGames"`
+	RankedTeamNMPZWins  uint64 `json:"rankedTeamNMPZWins"`
 
-	RankedSoloMovingGames uint64  `json:"rankedSoloMovingGames"`
-	RankedSoloMovingWins  uint64  `json:"rankedSoloMovingWins"`
-	RankedSoloMovingRatio float64 `json:"rankedSoloMovingRatio"`
+	RankedSoloMovingGames uint64 `json:"rankedSoloMovingGames"`
+	RankedSoloMovingWins  uint64 `json:"rankedSoloMovingWins"`
 
-	RankedSoloNoMoveGames uint64  `json:"rankedSoloNoMoveGames"`
-	RankedSoloNoMoveWins  uint64  `json:"rankedSoloNoMoveWins"`
-	RankedSoloNoMoveRatio float64 `json:"rankedSoloNoMoveRatio"`
+	RankedSoloNoMoveGames uint64 `json:"rankedSoloNoMoveGames"`
+	RankedSoloNoMoveWins  uint64 `json:"rankedSoloNoMoveWins"`
 
-	RankedSoloNMPZGames uint64  `json:"rankedSoloNMPZGames"`
-	RankedSoloNMPZWins  uint64  `json:"rankedSoloNMPZWins"`
-	RankedSoloNMPZRatio float64 `json:"rankedSoloNMPZRatio"`
+	RankedSoloNMPZGames uint64 `json:"rankedSoloNMPZGames"`
+	RankedSoloNMPZWins  uint64 `json:"rankedSoloNMPZWins"`
 
-	UnrankedSoloMovingGames uint64  `json:"unrankedSoloMovingGames"`
-	UnrankedSoloMovingWins  uint64  `json:"unrankedSoloMovingWins"`
-	UnrankedSoloMovingRatio float64 `json:"unrankedSoloMovingRatio"`
+	UnrankedSoloMovingGames uint64 `json:"unrankedSoloMovingGames"`
+	UnrankedSoloMovingWins  uint64 `json:"unrankedSoloMovingWins"`
 
-	UnrankedSoloNoMoveGames uint64  `json:"unrankedSoloNoMoveGames"`
-	UnrankedSoloNoMoveWins  uint64  `json:"unrankedSoloNoMoveWins"`
-	UnrankedSoloNoMoveRatio float64 `json:"unrankedSoloNoMoveRatio"`
+	UnrankedSoloNoMoveGames uint64 `json:"unrankedSoloNoMoveGames"`
+	UnrankedSoloNoMoveWins  uint64 `json:"unrankedSoloNoMoveWins"`
 
-	UnrankedSoloNMPZGames uint64  `json:"unrankedSoloNMPZGames"`
-	UnrankedSoloNMPZWins  uint64  `json:"unrankedSoloNMPZWins"`
-	UnrankedSoloNMPZRatio float64 `json:"unrankedSoloNMPZRatio"`
+	UnrankedSoloNMPZGames uint64 `json:"unrankedSoloNMPZGames"`
+	UnrankedSoloNMPZWins  uint64 `json:"unrankedSoloNMPZWins"`
 }
 
 func (si StatsInfo) String() string {
@@ -146,30 +137,21 @@ func DecodeApiResponseStats(body []byte) (*StatsInfo, error) {
 	return &StatsInfo{
 		RankedTeamMovingGames:   apiResp.RankedTeamDuelsStandard.NumGamesPlayed,
 		RankedTeamMovingWins:    apiResp.RankedTeamDuelsStandard.NumWins,
-		RankedTeamMovingRatio:   apiResp.RankedTeamDuelsStandard.WinRatio,
 		RankedTeamNoMoveGames:   apiResp.RankedTeamDuelsNoMove.NumGamesPlayed,
 		RankedTeamNoMoveWins:    apiResp.RankedTeamDuelsNoMove.NumWins,
-		RankedTeamNoMoveRatio:   apiResp.RankedTeamDuelsNoMove.WinRatio,
 		RankedTeamNMPZGames:     apiResp.RankedTeamDuelsNMPZ.NumGamesPlayed,
 		RankedTeamNMPZWins:      apiResp.RankedTeamDuelsNMPZ.NumWins,
-		RankedTeamNMPZRatio:     apiResp.RankedTeamDuelsNMPZ.WinRatio,
 		RankedSoloMovingGames:   apiResp.Duels.NumGamesPlayed,
 		RankedSoloMovingWins:    apiResp.Duels.NumWins,
-		RankedSoloMovingRatio:   apiResp.Duels.WinRatio,
 		RankedSoloNoMoveGames:   apiResp.DuelsNoMove.NumGamesPlayed,
 		RankedSoloNoMoveWins:    apiResp.DuelsNoMove.NumWins,
-		RankedSoloNoMoveRatio:   apiResp.DuelsNoMove.WinRatio,
 		RankedSoloNMPZGames:     apiResp.DuelsNMPZ.NumGamesPlayed,
 		RankedSoloNMPZWins:      apiResp.DuelsNMPZ.NumWins,
-		RankedSoloNMPZRatio:     apiResp.DuelsNMPZ.WinRatio,
 		UnrankedSoloMovingGames: apiResp.UnrankedDuels.NumGamesPlayed,
 		UnrankedSoloMovingWins:  apiResp.UnrankedDuels.NumWins,
-		UnrankedSoloMovingRatio: apiResp.UnrankedDuels.WinRatio,
 		UnrankedSoloNoMoveGames: apiResp.UnrankedDuelsNoMove.NumGamesPlayed,
 		UnrankedSoloNoMoveWins:  apiResp.UnrankedDuelsNoMove.NumWins,
-		UnrankedSoloNoMoveRatio: apiResp.UnrankedDuelsNoMove.WinRatio,
 		UnrankedSoloNMPZGames:   apiResp.UnrankedDuelsNMPZ.NumGamesPlayed,
 		UnrankedSoloNMPZWins:    apiResp.UnrankedDuelsNMPZ.NumWins,
-		UnrankedSoloNMPZRatio:   apiResp.UnrankedDuelsNMPZ.WinRatio,
 	}, nil
 }

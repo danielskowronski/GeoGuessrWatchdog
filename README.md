@@ -18,6 +18,7 @@ cd internal/db && sqlc generate; cd -
 ```bash
 docker compose up --build -d
 docker compose run --rm worker help
+docker compose run --rm worker trigger-workflow FetchUserStatsAndProgress
 ```
 
 example `ggwd.env`:

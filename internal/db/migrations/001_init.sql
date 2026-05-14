@@ -84,33 +84,24 @@ CREATE TABLE IF NOT EXISTS user_stats_history (
 
   ranked_team_moving_games BIGINT NOT NULL,
   ranked_team_moving_wins  BIGINT NOT NULL,
-  ranked_team_moving_ratio DOUBLE PRECISION NOT NULL,
   ranked_team_nomove_games BIGINT NOT NULL,
   ranked_team_nomove_wins  BIGINT NOT NULL,
-  ranked_team_nomove_ratio DOUBLE PRECISION NOT NULL,
   ranked_team_nmpz_games BIGINT NOT NULL,
   ranked_team_nmpz_wins  BIGINT NOT NULL,
-  ranked_team_nmpz_ratio DOUBLE PRECISION NOT NULL,
 
   ranked_solo_moving_games BIGINT NOT NULL,
   ranked_solo_moving_wins  BIGINT NOT NULL,
-  ranked_solo_moving_ratio DOUBLE PRECISION NOT NULL,
   ranked_solo_nomove_games BIGINT NOT NULL,
   ranked_solo_nomove_wins  BIGINT NOT NULL,
-  ranked_solo_nomove_ratio DOUBLE PRECISION NOT NULL,
   ranked_solo_nmpz_games BIGINT NOT NULL,
   ranked_solo_nmpz_wins  BIGINT NOT NULL,
-  ranked_solo_nmpz_ratio DOUBLE PRECISION NOT NULL,
 
   unranked_solo_moving_games BIGINT NOT NULL,
   unranked_solo_moving_wins  BIGINT NOT NULL,
-  unranked_solo_moving_ratio DOUBLE PRECISION NOT NULL,
   unranked_solo_nomove_games BIGINT NOT NULL,
   unranked_solo_nomove_wins  BIGINT NOT NULL,
-  unranked_solo_nomove_ratio DOUBLE PRECISION NOT NULL,
   unranked_solo_nmpz_games BIGINT NOT NULL,
   unranked_solo_nmpz_wins  BIGINT NOT NULL,
-  unranked_solo_nmpz_ratio DOUBLE PRECISION NOT NULL,
 
   timestamp TIMESTAMPTZ NOT NULL DEFAULT now()
 );

@@ -38,7 +38,7 @@ All competitive game modes will have at least following fields:
 
 - `numGamesPlayed`
 - `numWins`
-- `winRatio` (float, 0-1)
+- `winRatio` (float, 0-1) - it's recoverable from `numWins/numGamesPlayed`
 
 Some may contain additionaly:
 

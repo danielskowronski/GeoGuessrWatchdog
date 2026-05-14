@@ -7,12 +7,13 @@ const (
 	GG_API_PATH_USER_PROGRESS  = "/v4/ranked-system/progress/%s"
 	GG_COOKIE_NAME             = "_ncfa"
 
+	// TODO: split API names to workflows and verbs (scheduled/schedule/manual), also handle manual- with consts
 	TEMPORAL_SCHEDULE_FETCH_DIVISIONS_MAPS                = "fetch-divisions-maps-schedule"
 	TEMPORAL_SCHEDULED_TASK_FETCH_DIVISIONS_MAPS          = "fetch-divisions-maps-scheduled"
-	TEMPORAL_WORKFLOW_FETCH_DIVISIONS_MAPS                = "FetchDivisionsMaps"
+	TEMPORAL_WORKFLOW_FETCH_DIVISIONS_MAPS                = "FetchDivisionsMapsWorkflow"
 	TEMPORAL_SCHEDULE_FETCH_USER_STATS_AND_PROGRESS       = "fetch-user-stats-and-progress-schedule"
 	TEMPORAL_SCHEDULED_TASK_FETCH_USER_STATS_AND_PROGRESS = "fetch-user-stats-and-progress-scheduled"
-	TEMPORAL_WORKFLOW_FETCH_USER_STATS_AND_PROGRESS       = "FetchUserStatsAndProgress"
+	TEMPORAL_WORKFLOW_FETCH_USER_STATS_AND_PROGRESS       = "FetchUserStatsAndProgressWorkflow"
 
 	CONF_PATH_ENV_VAR = "GGWD_CONFIG_PATH"
 	DEFAULT_CONF_PATH = "/etc/ggwd/config.yaml"
