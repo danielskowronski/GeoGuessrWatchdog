@@ -111,7 +111,16 @@ func RunMapFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig c
 }
 
 func (a *Activities) NotifyAboutMapChangeActivity(ctx context.Context, input NotifierInput) (NotifierResult, error) {
-	// FIXME: implement this
+	notificationTitle := "Division Maps Watchdog - workflow execution completed"
+	notificationMessage := "**There will be details about map changes in the future**, for now this is just a notification that workflow executed successfully and API is reachable. If you are seeing this message, it means that the workflow executed successfully and was able to reach GeoGuessr API."
+
+	if a.Config.NotifierAPI.Target == nil || *a.Config.NotifierAPI.Target == "discord" {
+		err := SendDiscordNotification(ctx, a.Config.NotifierAPI.Discord, notificationTitle, notificationMessage)
+		return NotifierResult{
+			Success: err == nil,
+		}, err
+	}
+
 	return NotifierResult{
 		Success: true,
 	}, nil
