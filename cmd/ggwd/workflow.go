@@ -72,7 +72,7 @@ func FetchDivisionsMapsWorkflow(ctx workflow.Context, input FetchDivisionsMapsWo
 	return nil
 }
 
-func FetchUserStatsAndProgressWorkflow(ctx workflow.Context, input FetchUserStatsAndProgressWorkflowInput) error {
+func FetchSingleUserStatsAndProgressWorkflow(ctx workflow.Context, input FetchSingleUserStatsAndProgressWorkflowInput) error {
 
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(input.TemporalOptions.FanoutActivity.StartToCloseTimeoutSeconds) * time.Second,
@@ -86,47 +86,68 @@ func FetchUserStatsAndProgressWorkflow(ctx workflow.Context, input FetchUserStat
 
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
+	var fetchID int64
+	err := workflow.ExecuteActivity(ctx, (*Activities).InsertUserFetchHistoryActivity, input.UserID).Get(ctx, &fetchID)
+	if err != nil {
+		return err
+	}
+
 	if input.TriggerUserStats {
-		for start := 0; start < len(input.UsersList); start += input.TemporalOptions.Parallelism {
-			end := start + input.TemporalOptions.Parallelism
-			if end > len(input.UsersList) {
-				end = len(input.UsersList)
-			}
-			batch := input.UsersList[start:end]
-			futures := make([]workflow.Future, 0, len(batch))
-			for _, userID := range batch {
-				f := workflow.ExecuteActivity(ctx, (*Activities).UserStatsFetchActivity, UserStatsFetchInput{
-					UserID: userID,
-				})
-				futures = append(futures, f)
-			}
-			for _, f := range futures {
-				if err := f.Get(ctx, nil); err != nil {
-					return err
-				}
-			}
+		if err := workflow.ExecuteActivity(ctx, (*Activities).UserStatsFetchActivity, UserStatsFetchInput{
+			UserID:  input.UserID,
+			FetchID: fetchID,
+		}).Get(ctx, nil); err != nil {
+			return err
 		}
 	}
+
 	if input.TriggerUserProgress {
-		for start := 0; start < len(input.UsersList); start += input.TemporalOptions.Parallelism {
-			end := start + input.TemporalOptions.Parallelism
-			if end > len(input.UsersList) {
-				end = len(input.UsersList)
-			}
-			batch := input.UsersList[start:end]
-			futures := make([]workflow.Future, 0, len(batch))
-			for _, userID := range batch {
-				f := workflow.ExecuteActivity(ctx, (*Activities).UserProgressFetchActivity, UserProgressFetchInput{
-					UserID: userID,
-				})
-				futures = append(futures, f)
-			}
-			for _, f := range futures {
-				if err := f.Get(ctx, nil); err != nil {
-					return err
-				}
+		if err := workflow.ExecuteActivity(ctx, (*Activities).UserProgressFetchActivity, UserProgressFetchInput{
+			UserID:  input.UserID,
+			FetchID: fetchID,
+		}).Get(ctx, nil); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func FetchMuiltipleUsersStatsAndProgressWorkflow(ctx workflow.Context, input FetchMuiltipleUsersStatsAndProgressWorkflowInput) error {
+
+	activityOptions := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(input.TemporalOptions.FanoutActivity.StartToCloseTimeoutSeconds) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    time.Duration(input.TemporalOptions.FanoutActivity.RetryInitialIntervalSeconds) * time.Second,
+			BackoffCoefficient: input.TemporalOptions.FanoutActivity.RetryBackoffCoefficient,
+			MaximumInterval:    time.Duration(input.TemporalOptions.FanoutActivity.RetryMaximumIntervalSeconds) * time.Second,
+			MaximumAttempts:    int32(input.TemporalOptions.FanoutActivity.RetryMaximumAttempts),
+		},
+	}
+
+	ctx = workflow.WithActivityOptions(ctx, activityOptions)
+
+	for start := 0; start < len(input.UsersList); start += input.TemporalOptions.Parallelism {
+		end := start + input.TemporalOptions.Parallelism
+		if end > len(input.UsersList) {
+			end = len(input.UsersList)
+		}
+		batch := input.UsersList[start:end]
+		futures := make([]workflow.Future, 0, len(batch))
+		for _, userID := range batch {
+			f := workflow.ExecuteChildWorkflow(ctx, FetchSingleUserStatsAndProgressWorkflow, FetchSingleUserStatsAndProgressWorkflowInput{
+				TriggerUserStats:    input.TriggerUserStats,
+				TriggerUserProgress: input.TriggerUserProgress,
+				UserID:              userID,
+				TemporalOptions:     input.TemporalOptions,
+			})
+			futures = append(futures, f)
+		}
+		for _, f := range futures {
+			if err := f.Get(ctx, nil); err != nil {
+				return err
 			}
 		}
 	}
+
 	return nil
 }

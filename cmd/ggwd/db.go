@@ -268,7 +268,24 @@ func (d *DB) UpsertMapInfo(ctx context.Context, mi apischema.MapInfo) (bool, err
 	return mapInfoChanged, nil
 }
 
-func (d *DB) InsertUserProgressHistory(ctx context.Context, progress apischema.ProgressInfo, userID string) (bool, error) {
+func (d *DB) InsertUserFetchHistory(ctx context.Context, userID string) (int64, error) {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return 0, err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	fetchHistoryID, err := q.InsertUserFetchHistory(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return fetchHistoryID, nil
+}
+
+func (d *DB) InsertUserProgressHistory(ctx context.Context, progress apischema.ProgressInfo, userID string, fetchID int64) (bool, error) {
 	pool, err := pgxpool.New(ctx, d.url)
 	if err != nil {
 		return false, err
@@ -279,6 +296,7 @@ func (d *DB) InsertUserProgressHistory(ctx context.Context, progress apischema.P
 
 	_, err = q.InsertUserProgressHistory(ctx, db.InsertUserProgressHistoryParams{
 		UserID:         userID,
+		FetchID:        fetchID,
 		DivisionName:   progress.DivisionName,
 		DivisionNumber: int32(progress.DivisionNumber),
 		RatingOverall:  int32(progress.RatingOverall),
@@ -296,7 +314,7 @@ func (d *DB) InsertUserProgressHistory(ctx context.Context, progress apischema.P
 	return true, nil
 }
 
-func (d *DB) InsertUserStatsHistory(ctx context.Context, stats apischema.StatsInfo, userID string) (bool, error) {
+func (d *DB) InsertUserStatsHistory(ctx context.Context, stats apischema.StatsInfo, userID string, fetchID int64) (bool, error) {
 	pool, err := pgxpool.New(ctx, d.url)
 	if err != nil {
 		return false, err
@@ -307,6 +325,7 @@ func (d *DB) InsertUserStatsHistory(ctx context.Context, stats apischema.StatsIn
 
 	_, err = q.InsertUserStatsHistory(ctx, db.InsertUserStatsHistoryParams{
 		UserID:                  userID,
+		FetchID:                 fetchID,
 		RankedTeamMovingGames:   int64(stats.RankedTeamMovingGames),
 		RankedTeamMovingWins:    int64(stats.RankedTeamMovingWins),
 		RankedTeamNomoveGames:   int64(stats.RankedTeamNoMoveGames),

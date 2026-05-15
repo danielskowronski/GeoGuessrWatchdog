@@ -70,7 +70,8 @@ func startWorker() error {
 		Config: cfg,
 	}
 	w.RegisterWorkflow(FetchDivisionsMapsWorkflow)
-	w.RegisterWorkflow(FetchUserStatsAndProgressWorkflow)
+	w.RegisterWorkflow(FetchMuiltipleUsersStatsAndProgressWorkflow)
+	w.RegisterWorkflow(FetchSingleUserStatsAndProgressWorkflow)
 	w.RegisterActivity(acts)
 	fmt.Println("starting Temporal worker...")
 
@@ -122,13 +123,13 @@ func startWorkflow(Workflow WorkflowEnum) error {
 		}
 		run, runErr = c.ExecuteWorkflow(context.Background(), opts, FetchDivisionsMapsWorkflow, input)
 	case WorkflowEnumFetchUserStatsAndProgress:
-		input := FetchUserStatsAndProgressWorkflowInput{
+		input := FetchMuiltipleUsersStatsAndProgressWorkflowInput{
 			TriggerUserStats:    true,
 			TriggerUserProgress: true,
 			UsersList:           cfg.Watchdogs.UserStats.ObserveUsers,
 			TemporalOptions:     cfg.Watchdogs.UserStats.Temporal,
 		}
-		run, runErr = c.ExecuteWorkflow(context.Background(), opts, FetchUserStatsAndProgressWorkflow, input)
+		run, runErr = c.ExecuteWorkflow(context.Background(), opts, FetchMuiltipleUsersStatsAndProgressWorkflow, input)
 	default:
 		return fmt.Errorf("unknown workflow: %v", Workflow)
 	}

@@ -12,6 +12,7 @@ import (
 const insertUserStatsHistory = `-- name: InsertUserStatsHistory :one
 INSERT INTO user_stats_history (
   user_id,
+  fetch_id,
   ranked_team_moving_games,
   ranked_team_moving_wins,
   ranked_team_nomove_games,
@@ -31,13 +32,14 @@ INSERT INTO user_stats_history (
   unranked_solo_nmpz_games,
   unranked_solo_nmpz_wins
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
 )
 RETURNING id
 `
 
 type InsertUserStatsHistoryParams struct {
 	UserID                  string
+	FetchID                 int64
 	RankedTeamMovingGames   int64
 	RankedTeamMovingWins    int64
 	RankedTeamNomoveGames   int64
@@ -61,6 +63,7 @@ type InsertUserStatsHistoryParams struct {
 func (q *Queries) InsertUserStatsHistory(ctx context.Context, arg InsertUserStatsHistoryParams) (int64, error) {
 	row := q.db.QueryRow(ctx, insertUserStatsHistory,
 		arg.UserID,
+		arg.FetchID,
 		arg.RankedTeamMovingGames,
 		arg.RankedTeamMovingWins,
 		arg.RankedTeamNomoveGames,

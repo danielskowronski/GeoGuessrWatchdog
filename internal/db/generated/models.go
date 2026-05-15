@@ -53,9 +53,16 @@ type MapInfo struct {
 	LastChanged    pgtype.Timestamptz
 }
 
+type UserFetchHistory struct {
+	ID        int64
+	UserID    string
+	Timestamp pgtype.Timestamptz
+}
+
 type UserProgressHistory struct {
 	ID             int64
 	UserID         string
+	FetchID        int64
 	DivisionName   string
 	DivisionNumber int32
 	RatingOverall  int32
@@ -71,6 +78,7 @@ type UserProgressHistory struct {
 type UserStatsHistory struct {
 	ID                      int64
 	UserID                  string
+	FetchID                 int64
 	RankedTeamMovingGames   int64
 	RankedTeamMovingWins    int64
 	RankedTeamNomoveGames   int64

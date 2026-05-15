@@ -59,9 +59,20 @@ CREATE TABLE IF NOT EXISTS map_history (
 CREATE INDEX IF NOT EXISTS map_history_map_id_idx
   ON map_history (map_id);
 
+---
+
+CREATE TABLE IF NOT EXISTS user_fetch_history (
+  id BIGSERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS user_fetch_history_user_id_idx
+  ON user_fetch_history (user_id);
+
 CREATE TABLE IF NOT EXISTS user_progress_history (
   id BIGSERIAL PRIMARY KEY,
   user_id TEXT NOT NULL,
+  fetch_id BIGINT NOT NULL REFERENCES user_fetch_history(id),
 
   division_name TEXT NOT NULL,
   division_number INT NOT NULL,
@@ -81,6 +92,7 @@ CREATE INDEX IF NOT EXISTS user_progress_history_user_id_idx
 CREATE TABLE IF NOT EXISTS user_stats_history (
   id BIGSERIAL PRIMARY KEY,
   user_id TEXT NOT NULL,
+  fetch_id BIGINT NOT NULL REFERENCES user_fetch_history(id),
 
   ranked_team_moving_games BIGINT NOT NULL,
   ranked_team_moving_wins  BIGINT NOT NULL,
@@ -107,5 +119,50 @@ CREATE TABLE IF NOT EXISTS user_stats_history (
 );
 CREATE INDEX IF NOT EXISTS user_stats_history_user_id_idx
   ON user_stats_history (user_id);
+
+CREATE OR REPLACE VIEW user_fetch_combined_history AS
+SELECT
+  ufh.id AS fetch_id,
+  ufh.user_id,
+  ufh.timestamp AS fetch_timestamp,
+
+  uph.division_name,
+  uph.division_number,
+  uph.rating_overall,
+  uph.rating_moving,
+  uph.rating_nomove,
+  uph.rating_nmpz,
+  uph.guessed_first,
+  uph.best_countries,
+  uph.worst_countries,
+
+  ush.ranked_team_moving_games,
+  ush.ranked_team_moving_wins,
+  ush.ranked_team_nomove_games,
+  ush.ranked_team_nomove_wins,
+  ush.ranked_team_nmpz_games,
+  ush.ranked_team_nmpz_wins,
+
+  ush.ranked_solo_moving_games,
+  ush.ranked_solo_moving_wins,
+  ush.ranked_solo_nomove_games,
+  ush.ranked_solo_nomove_wins,
+  ush.ranked_solo_nmpz_games,
+  ush.ranked_solo_nmpz_wins,
+
+  ush.unranked_solo_moving_games,
+  ush.unranked_solo_moving_wins,
+  ush.unranked_solo_nomove_games,
+  ush.unranked_solo_nomove_wins,
+  ush.unranked_solo_nmpz_games,
+  ush.unranked_solo_nmpz_wins
+
+FROM user_fetch_history ufh
+LEFT JOIN user_progress_history uph
+  ON uph.fetch_id = ufh.id
+LEFT JOIN user_stats_history ush
+  ON ush.fetch_id = ufh.id;
+
+---
 
 -- TODO: table for notifier last sent notifications

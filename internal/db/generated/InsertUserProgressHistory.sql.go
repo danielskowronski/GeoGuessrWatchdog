@@ -12,6 +12,7 @@ import (
 const insertUserProgressHistory = `-- name: InsertUserProgressHistory :one
 INSERT INTO user_progress_history (
   user_id,
+  fetch_id,
   division_name,
   division_number,
   rating_overall,
@@ -22,13 +23,14 @@ INSERT INTO user_progress_history (
   best_countries,
   worst_countries
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
 RETURNING id
 `
 
 type InsertUserProgressHistoryParams struct {
 	UserID         string
+	FetchID        int64
 	DivisionName   string
 	DivisionNumber int32
 	RatingOverall  int32
@@ -43,6 +45,7 @@ type InsertUserProgressHistoryParams struct {
 func (q *Queries) InsertUserProgressHistory(ctx context.Context, arg InsertUserProgressHistoryParams) (int64, error) {
 	row := q.db.QueryRow(ctx, insertUserProgressHistory,
 		arg.UserID,
+		arg.FetchID,
 		arg.DivisionName,
 		arg.DivisionNumber,
 		arg.RatingOverall,

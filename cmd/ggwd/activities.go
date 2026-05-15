@@ -126,8 +126,27 @@ func (a *Activities) NotifyAboutMapChangeActivity(ctx context.Context, input Not
 	}, nil
 }
 
+func (a *Activities) InsertUserFetchHistoryActivity(ctx context.Context, userID string) (int64, error) {
+	result, err := RunInsertUserFetchHistory(ctx, a.Config.Database, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return result, nil
+}
+func RunInsertUserFetchHistory(ctx context.Context, dbConfig config.DatabaseConfig, userID string) (int64, error) {
+	db := NewDB(dbConfig.URL)
+
+	fetchID, err := db.InsertUserFetchHistory(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return fetchID, nil
+}
+
 func (a *Activities) UserProgressFetchActivity(ctx context.Context, input UserProgressFetchInput) (UserProgressFetchOutput, error) {
-	result, err := RunUserProgressFetch(ctx, a.Config.Database, a.Config.GeoguessrAPI, input.UserID)
+	result, err := RunUserProgressFetch(ctx, a.Config.Database, a.Config.GeoguessrAPI, input.UserID, input.FetchID)
 
 	if err != nil {
 		return UserProgressFetchOutput{}, err
@@ -135,7 +154,7 @@ func (a *Activities) UserProgressFetchActivity(ctx context.Context, input UserPr
 
 	return result, nil
 }
-func RunUserProgressFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, userID string) (UserProgressFetchOutput, error) {
+func RunUserProgressFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, userID string, fetchID int64) (UserProgressFetchOutput, error) {
 	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie)
 	if err != nil {
 		return UserProgressFetchOutput{}, err
@@ -148,7 +167,7 @@ func RunUserProgressFetch(ctx context.Context, dbConfig config.DatabaseConfig, g
 		return UserProgressFetchOutput{}, err
 	}
 
-	_, err = db.InsertUserProgressHistory(ctx, *userProgress, userID)
+	_, err = db.InsertUserProgressHistory(ctx, *userProgress, userID, fetchID)
 	if err != nil {
 		return UserProgressFetchOutput{}, err
 	}
@@ -161,7 +180,7 @@ func RunUserProgressFetch(ctx context.Context, dbConfig config.DatabaseConfig, g
 }
 
 func (a *Activities) UserStatsFetchActivity(ctx context.Context, input UserStatsFetchInput) (UserStatsFetchOutput, error) {
-	result, err := RunUserStatsFetch(ctx, a.Config.Database, a.Config.GeoguessrAPI, input.UserID)
+	result, err := RunUserStatsFetch(ctx, a.Config.Database, a.Config.GeoguessrAPI, input.UserID, input.FetchID)
 	if err != nil {
 		return UserStatsFetchOutput{}, err
 	}
@@ -169,7 +188,7 @@ func (a *Activities) UserStatsFetchActivity(ctx context.Context, input UserStats
 	return result, nil
 }
 
-func RunUserStatsFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, userID string) (UserStatsFetchOutput, error) {
+func RunUserStatsFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, userID string, fetchID int64) (UserStatsFetchOutput, error) {
 	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie)
 	if err != nil {
 		return UserStatsFetchOutput{}, err
@@ -182,7 +201,7 @@ func RunUserStatsFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggCo
 		return UserStatsFetchOutput{}, err
 	}
 
-	_, err = db.InsertUserStatsHistory(ctx, *userStats, userID)
+	_, err = db.InsertUserStatsHistory(ctx, *userStats, userID, fetchID)
 	if err != nil {
 		return UserStatsFetchOutput{}, err
 	}

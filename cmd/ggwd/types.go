@@ -41,7 +41,7 @@ type NotifierResult struct {
 	Success bool `json:"success"`
 }
 
-type FetchUserStatsAndProgressWorkflowInput struct {
+type FetchMuiltipleUsersStatsAndProgressWorkflowInput struct {
 	TriggerUserStats    bool `json:"triggerUserStats,omitempty"`
 	TriggerUserProgress bool `json:"triggerUserProgress,omitempty"`
 
@@ -49,9 +49,26 @@ type FetchUserStatsAndProgressWorkflowInput struct {
 
 	TemporalOptions config.TemporalAdvanced `json:"temporalOptions,omitempty"`
 }
+type FetchSingleUserStatsAndProgressWorkflowInput struct {
+	TriggerUserStats    bool `json:"triggerUserStats,omitempty"`
+	TriggerUserProgress bool `json:"triggerUserProgress,omitempty"`
+
+	UserID string `json:"userID,omitempty"`
+
+	TemporalOptions config.TemporalAdvanced `json:"temporalOptions,omitempty"`
+}
+
+type UserFetchInitInput struct {
+	UserID string `json:"user_id"`
+}
+
+type UserFetchInitOutput struct {
+	FetchID int64 `json:"fetch_id"`
+}
 
 type UserProgressFetchInput struct {
-	UserID string `json:"user_id"`
+	UserID  string `json:"user_id"`
+	FetchID int64  `json:"fetch_id"`
 }
 
 type UserProgressFetchOutput struct {
@@ -61,7 +78,8 @@ type UserProgressFetchOutput struct {
 }
 
 type UserStatsFetchInput struct {
-	UserID string `json:"user_id"`
+	UserID  string `json:"user_id"`
+	FetchID int64  `json:"fetch_id"`
 }
 
 type UserStatsFetchOutput struct {

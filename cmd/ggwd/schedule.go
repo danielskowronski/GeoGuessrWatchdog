@@ -114,7 +114,7 @@ func EnsureFetchUserStatsAndProgressSchedule(
 		},
 	}
 
-	input := FetchUserStatsAndProgressWorkflowInput{
+	input := FetchMuiltipleUsersStatsAndProgressWorkflowInput{
 		TriggerUserStats:    true,
 		TriggerUserProgress: true,
 		UsersList:           cfg.Watchdogs.UserStats.ObserveUsers,

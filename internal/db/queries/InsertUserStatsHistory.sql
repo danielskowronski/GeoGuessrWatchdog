@@ -1,6 +1,7 @@
 -- name: InsertUserStatsHistory :one
 INSERT INTO user_stats_history (
   user_id,
+  fetch_id,
   ranked_team_moving_games,
   ranked_team_moving_wins,
   ranked_team_nomove_games,
@@ -20,6 +21,6 @@ INSERT INTO user_stats_history (
   unranked_solo_nmpz_games,
   unranked_solo_nmpz_wins
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
 )
 RETURNING id;
