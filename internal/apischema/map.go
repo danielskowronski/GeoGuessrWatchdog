@@ -49,6 +49,22 @@ func (mi MapInfo) String() string {
 		mi.ID, mi.Name, mi.Description, mi.BoundsMinLat, mi.BoundsMinLng, mi.BoundsMaxLat, mi.BoundsMaxLng, mi.UpdatedAt.Format(time.RFC3339), mi.MaxErrorDistance, mi.CoordinateCount)
 }
 
+func coordinateToString(value float64, neg string, pos string) string {
+	if value < 0 {
+		return fmt.Sprintf("%10.6f %s", -value, neg)
+	} else {
+		return fmt.Sprintf("%10.6f %s", value, pos)
+	}
+}
+
+func (mi MapInfo) Coordinates() string {
+	return fmt.Sprintf("[%s %s - %s %s]",
+		coordinateToString(mi.BoundsMinLat, "S", "N"),
+		coordinateToString(mi.BoundsMinLng, "W", "E"),
+		coordinateToString(mi.BoundsMaxLat, "S", "N"),
+		coordinateToString(mi.BoundsMaxLng, "W", "E"))
+}
+
 func DecodeApiResponseMap(body []byte) (*MapInfo, error) {
 	var apiResp MapApiResponse
 	err := json.Unmarshal(body, &apiResp)

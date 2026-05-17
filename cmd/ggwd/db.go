@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/apischema"
@@ -10,6 +11,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type DivisionModeMapDetails struct {
+	divisionName string
+	gameMode     string
+	mapInfo      apischema.MapInfo
+}
+
+var ErrNoPreviousNotification = errors.New("no previous notification found for this division and game mode")
 
 type DB struct {
 	url string
@@ -350,4 +359,120 @@ func (d *DB) InsertUserStatsHistory(ctx context.Context, stats apischema.StatsIn
 	}
 
 	return true, nil
+}
+
+func (d *DB) GetCurrentDivisionMapInfo(ctx context.Context, divisionName string, gameMode string) (*DivisionModeMapDetails, error) {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return nil, err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	divisionMapInfo, err := q.GetDivisionMapInfo(ctx, db.GetDivisionMapInfoParams{
+		DivisionName: divisionName,
+		GameMode:     gameMode,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &DivisionModeMapDetails{
+		divisionName: divisionName,
+		gameMode:     gameMode,
+		mapInfo: apischema.MapInfo{
+			ID:               divisionMapInfo.MapID,
+			Name:             divisionMapInfo.MapName,
+			BoundsMinLat:     divisionMapInfo.MapBoundsMinLat.Float64,
+			BoundsMinLng:     divisionMapInfo.MapBoundsMinLon.Float64,
+			BoundsMaxLat:     divisionMapInfo.MapBoundsMaxLat.Float64,
+			BoundsMaxLng:     divisionMapInfo.MapBoundsMaxLon.Float64,
+			MaxErrorDistance: divisionMapInfo.MapMaxErrDistance.Int64,
+			UpdatedAt:        divisionMapInfo.MapApiUpdated.Time,
+			CoordinateCount:  divisionMapInfo.MapLocationCount,
+		},
+	}, nil
+}
+
+func (d *DB) GetLastDivisionMapNotification(ctx context.Context, divisionName string, gameMode string) (*DivisionModeMapDetails, error) {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return nil, err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	lastNotification, err := q.GetDivisionMapLastNotification(ctx, db.GetDivisionMapLastNotificationParams{
+		DivisionName: divisionName,
+		GameMode:     gameMode,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNoPreviousNotification
+		}
+		return nil, err
+	}
+
+	return &DivisionModeMapDetails{
+		divisionName: divisionName,
+		gameMode:     gameMode,
+		mapInfo: apischema.MapInfo{
+			ID:               lastNotification.MapID,
+			BoundsMinLat:     lastNotification.MapBoundsMinLat.Float64,
+			BoundsMinLng:     lastNotification.MapBoundsMinLon.Float64,
+			BoundsMaxLat:     lastNotification.MapBoundsMaxLat.Float64,
+			BoundsMaxLng:     lastNotification.MapBoundsMaxLon.Float64,
+			MaxErrorDistance: lastNotification.MapMaxErrDistance.Int64,
+			UpdatedAt:        lastNotification.MapApiUpdated.Time,
+			CoordinateCount:  lastNotification.LocationCount,
+		},
+	}, nil
+}
+
+func (d *DB) UpsertDivisionMapNotification(ctx context.Context, dmmd DivisionModeMapDetails) error {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	_, err = q.UpsertDivisionMapLastNotification(ctx, db.UpsertDivisionMapLastNotificationParams{
+		DivisionName: dmmd.divisionName,
+		GameMode:     dmmd.gameMode,
+		MapID:        dmmd.mapInfo.ID,
+		MapBoundsMinLat: pgtype.Float8{
+			Float64: dmmd.mapInfo.BoundsMinLat,
+			Valid:   true,
+		},
+		MapBoundsMinLon: pgtype.Float8{
+			Float64: dmmd.mapInfo.BoundsMinLng,
+			Valid:   true,
+		},
+		MapBoundsMaxLat: pgtype.Float8{
+			Float64: dmmd.mapInfo.BoundsMaxLat,
+			Valid:   true,
+		},
+		MapBoundsMaxLon: pgtype.Float8{
+			Float64: dmmd.mapInfo.BoundsMaxLng,
+			Valid:   true,
+		},
+		MapMaxErrDistance: pgtype.Int8{
+			Int64: dmmd.mapInfo.MaxErrorDistance,
+			Valid: true,
+		},
+		MapApiUpdated: pgtype.Timestamptz{
+			Time:  dmmd.mapInfo.UpdatedAt,
+			Valid: true,
+		},
+		LocationCount: dmmd.mapInfo.CoordinateCount,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

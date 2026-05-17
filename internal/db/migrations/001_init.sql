@@ -165,4 +165,39 @@ LEFT JOIN user_stats_history ush
 
 ---
 
--- TODO: table for notifier last sent notifications
+CREATE OR REPLACE VIEW division_map_info AS
+SELECT
+  di.division_name as division_name,
+  di.game_mode as game_mode,
+  di.map_id as map_id,
+  di.map_name as map_name,
+  mi.bounds_min_lat as map_bounds_min_lat,
+  mi.bounds_min_lon as map_bounds_min_lon,
+  mi.bounds_max_lat as map_bounds_max_lat,
+  mi.bounds_max_lon as map_bounds_max_lon,
+  mi.max_err_distance as map_max_err_distance,
+  mi.api_updated as map_api_updated,
+  mi.location_count as map_location_count
+FROM division_info di
+JOIN map_info mi
+  ON mi.api_id = di.map_id;
+
+CREATE TABLE IF NOT EXISTS division_map_last_notifications (
+  id BIGSERIAL PRIMARY KEY,
+
+  division_name TEXT NOT NULL,
+  game_mode TEXT NOT NULL,
+
+  map_id TEXT NOT NULL,
+  map_bounds_min_lat DOUBLE PRECISION,
+  map_bounds_min_lon DOUBLE PRECISION,
+  map_bounds_max_lat DOUBLE PRECISION,
+  map_bounds_max_lon DOUBLE PRECISION,
+  map_max_err_distance BIGINT,
+  map_api_updated TIMESTAMPTZ NOT NULL DEFAULT now(),
+  location_count BIGINT NOT NULL DEFAULT 0,
+
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS division_map_last_notifications_selector_idx
+  ON division_map_last_notifications (division_name, game_mode);

@@ -41,3 +41,33 @@ func SendDiscordNotification(ctx context.Context, cfg config.DiscordConfig, titl
 
 	return nil
 }
+
+func NiceDivisionModeString(divisionName string, gameMode string) string {
+	mode := gameMode
+	if mode == "standardDuels" {
+		mode = "Moving"
+	} else if mode == "noMoveDuels" {
+		mode = "NoMove"
+	} else if mode == "nmpzDuels" {
+		mode = "NMPZ"
+	}
+	return fmt.Sprintf("%s - %s", divisionName, mode)
+}
+func formatMapUrl(mapID string, mapName string) string {
+	return fmt.Sprintf("[%s](https://www.geoguessr.com/maps/%s)", mapName, mapID)
+}
+
+func SendDiscordMapChangeNotification(ctx context.Context, cfg config.DiscordConfig, divisionMode DivisionModeMapDetails, delta DivisionMapDelta) error {
+	notificationTitle := fmt.Sprintf("Map change in %s!", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
+	notificationMessage := "No previous map information available"
+
+	if delta.MapPointerChanged {
+		notificationTitle = fmt.Sprintf("New map assigned for %s", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
+		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name)
+	} else if delta.MapDetailsChanged {
+		notificationTitle = fmt.Sprintf("Map was updated for %s", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
+		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name) + "\n\n" + delta.Details
+	}
+
+	return SendDiscordNotification(ctx, cfg, notificationTitle, notificationMessage)
+}

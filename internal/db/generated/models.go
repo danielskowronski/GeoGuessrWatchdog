@@ -25,6 +25,35 @@ type DivisionInfo struct {
 	LastChanged  pgtype.Timestamptz
 }
 
+type DivisionMapInfo struct {
+	DivisionName      string
+	GameMode          string
+	MapID             string
+	MapName           string
+	MapBoundsMinLat   pgtype.Float8
+	MapBoundsMinLon   pgtype.Float8
+	MapBoundsMaxLat   pgtype.Float8
+	MapBoundsMaxLon   pgtype.Float8
+	MapMaxErrDistance pgtype.Int8
+	MapApiUpdated     pgtype.Timestamptz
+	MapLocationCount  int64
+}
+
+type DivisionMapLastNotification struct {
+	ID                int64
+	DivisionName      string
+	GameMode          string
+	MapID             string
+	MapBoundsMinLat   pgtype.Float8
+	MapBoundsMinLon   pgtype.Float8
+	MapBoundsMaxLat   pgtype.Float8
+	MapBoundsMaxLon   pgtype.Float8
+	MapMaxErrDistance pgtype.Int8
+	MapApiUpdated     pgtype.Timestamptz
+	LocationCount     int64
+	Timestamp         pgtype.Timestamptz
+}
+
 type MapHistory struct {
 	ID             int64
 	MapID          int64
@@ -51,6 +80,39 @@ type MapInfo struct {
 	ApiUpdated     pgtype.Timestamptz
 	LocationCount  int64
 	LastChanged    pgtype.Timestamptz
+}
+
+type UserFetchCombinedHistory struct {
+	FetchID                 int64
+	UserID                  string
+	FetchTimestamp          pgtype.Timestamptz
+	DivisionName            pgtype.Text
+	DivisionNumber          pgtype.Int4
+	RatingOverall           pgtype.Int4
+	RatingMoving            pgtype.Int4
+	RatingNomove            pgtype.Int4
+	RatingNmpz              pgtype.Int4
+	GuessedFirst            pgtype.Float8
+	BestCountries           pgtype.Text
+	WorstCountries          pgtype.Text
+	RankedTeamMovingGames   pgtype.Int8
+	RankedTeamMovingWins    pgtype.Int8
+	RankedTeamNomoveGames   pgtype.Int8
+	RankedTeamNomoveWins    pgtype.Int8
+	RankedTeamNmpzGames     pgtype.Int8
+	RankedTeamNmpzWins      pgtype.Int8
+	RankedSoloMovingGames   pgtype.Int8
+	RankedSoloMovingWins    pgtype.Int8
+	RankedSoloNomoveGames   pgtype.Int8
+	RankedSoloNomoveWins    pgtype.Int8
+	RankedSoloNmpzGames     pgtype.Int8
+	RankedSoloNmpzWins      pgtype.Int8
+	UnrankedSoloMovingGames pgtype.Int8
+	UnrankedSoloMovingWins  pgtype.Int8
+	UnrankedSoloNomoveGames pgtype.Int8
+	UnrankedSoloNomoveWins  pgtype.Int8
+	UnrankedSoloNmpzGames   pgtype.Int8
+	UnrankedSoloNmpzWins    pgtype.Int8
 }
 
 type UserFetchHistory struct {

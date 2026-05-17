@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
@@ -111,19 +114,108 @@ func RunMapFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig c
 }
 
 func (a *Activities) NotifyAboutMapChangeActivity(ctx context.Context, input NotifierInput) (NotifierResult, error) {
-	notificationTitle := "Division Maps Watchdog - workflow execution completed"
-	notificationMessage := "**There will be details about map changes in the future**, for now this is just a notification that workflow executed successfully and API is reachable. If you are seeing this message, it means that the workflow executed successfully and was able to reach GeoGuessr API."
-
-	if a.Config.NotifierAPI.Target == nil || *a.Config.NotifierAPI.Target == "discord" {
-		err := SendDiscordNotification(ctx, a.Config.NotifierAPI.Discord, notificationTitle, notificationMessage)
-		return NotifierResult{
-			Success: err == nil,
-		}, err
+	for _, dm := range a.Config.Watchdogs.CompetitiveMaps.NotifyAbout {
+		err := RunNotifyAboutMapChange(ctx, a.Config.Database, a.Config.NotifierAPI.Discord, dm)
+		if err != nil {
+			return NotifierResult{
+				Success: false,
+			}, err
+		}
 	}
 
 	return NotifierResult{
 		Success: true,
 	}, nil
+}
+
+type DivisionMapDelta struct {
+	MapPointerChanged bool
+	MapDetailsChanged bool
+	Details           string
+}
+
+func (dmmd *DivisionModeMapDetails) CompareWithNotification(lastNotification *DivisionModeMapDetails) DivisionMapDelta {
+	// TODO: cover it woth feature flags
+	delta := DivisionMapDelta{}
+	delta.Details = "Maps didn't change"
+
+	if lastNotification.mapInfo.ID != dmmd.mapInfo.ID {
+		delta.MapPointerChanged = true
+		delta.Details = "New map assigned"
+	} else {
+		changes := []string{}
+		if lastNotification.mapInfo.BoundsMinLat != dmmd.mapInfo.BoundsMinLat ||
+			lastNotification.mapInfo.BoundsMinLng != dmmd.mapInfo.BoundsMinLng ||
+			lastNotification.mapInfo.BoundsMaxLat != dmmd.mapInfo.BoundsMaxLat ||
+			lastNotification.mapInfo.BoundsMaxLng != dmmd.mapInfo.BoundsMaxLng {
+			delta.MapDetailsChanged = true
+			msg := "boundaries changed: " + lastNotification.mapInfo.Coordinates() + " -> " + dmmd.mapInfo.Coordinates()
+			changes = append(changes, msg)
+		}
+		if lastNotification.mapInfo.MaxErrorDistance != dmmd.mapInfo.MaxErrorDistance {
+			delta.MapDetailsChanged = true
+			msg := fmt.Sprintf("max error distance changed: %d -> %d", lastNotification.mapInfo.MaxErrorDistance, dmmd.mapInfo.MaxErrorDistance)
+			changes = append(changes, msg)
+		}
+		if lastNotification.mapInfo.CoordinateCount != dmmd.mapInfo.CoordinateCount {
+			delta.MapDetailsChanged = true
+			msg := fmt.Sprintf("coordinate count changed: %d -> %d", lastNotification.mapInfo.CoordinateCount, dmmd.mapInfo.CoordinateCount)
+			changes = append(changes, msg)
+		}
+		if !lastNotification.mapInfo.UpdatedAt.Equal(dmmd.mapInfo.UpdatedAt) {
+			delta.MapDetailsChanged = true
+			msg := fmt.Sprintf("updatedAt changed: %s -> %s", lastNotification.mapInfo.UpdatedAt.Format(time.RFC1123), dmmd.mapInfo.UpdatedAt.Format(time.RFC1123))
+			changes = append(changes, msg)
+		}
+		if len(changes) > 0 {
+			delta.Details = "Map details changed:\n- " + strings.Join(changes, "\n- ")
+		}
+	}
+
+	return delta
+}
+
+func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig, discordConfig config.DiscordConfig, dm config.NotifyAboutDivisionModeConfig) error {
+	db := NewDB(dbConfig.URL)
+
+	noPreviousNotifications := false
+	var dmd DivisionMapDelta
+
+	currentDivisionMap, err := db.GetCurrentDivisionMapInfo(ctx, dm.DivisionName, dm.GameMode)
+	if err != nil {
+		return err
+	}
+
+	lastNotification, err := db.GetLastDivisionMapNotification(ctx, dm.DivisionName, dm.GameMode)
+	if err != nil {
+		if errors.Is(err, ErrNoPreviousNotification) {
+			noPreviousNotifications = true
+		} else {
+			return err
+		}
+	} else {
+		dmd = currentDivisionMap.CompareWithNotification(lastNotification)
+	}
+
+	shouldNotify := noPreviousNotifications || dmd.MapPointerChanged || dmd.MapDetailsChanged
+
+	if shouldNotify {
+		var dm DivisionModeMapDetails
+		dm.divisionName = currentDivisionMap.divisionName
+		dm.gameMode = currentDivisionMap.gameMode
+		dm.mapInfo = currentDivisionMap.mapInfo
+		err = SendDiscordMapChangeNotification(ctx, discordConfig, dm, dmd)
+		if err != nil {
+			return fmt.Errorf("send discord notification: %w", err)
+		}
+
+		err = db.UpsertDivisionMapNotification(ctx, *currentDivisionMap)
+		if err != nil {
+			return fmt.Errorf("insert division map notification to DB: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (a *Activities) InsertUserFetchHistoryActivity(ctx context.Context, userID string) (int64, error) {
