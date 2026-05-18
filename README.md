@@ -62,7 +62,7 @@ DB=temporal
 
 also update `config_dockercompose.yaml`
 
-### Discord notifications
+### External notifications
 
 Follow https://containrrr.dev/shoutrrr/v0.8/services/discord/ (or other target in Shoutrrr) to get URI. Set it in env var `GGWD_notifierApi_shoutrrr` (multiple URLs - comma separated).
 

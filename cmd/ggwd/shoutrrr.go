@@ -48,7 +48,7 @@ func PatchShoutrrrUriToSetSplitLinesFalse(rawURL string) (string, error) {
 	return rawURL, nil
 }
 
-func SendDiscordNotification(ctx context.Context, urls []string, title string, message string, color string) error {
+func SendNotification(ctx context.Context, urls []string, title string, message string, color string) error {
 	if len(urls) == 0 {
 		return nil
 	}
@@ -108,7 +108,7 @@ func formatMapUrl(mapID string, mapName string) string {
 	return fmt.Sprintf("[%s](https://www.geoguessr.com/maps/%s)", mapName, mapID)
 }
 
-func SendDiscordMapChangeNotification(ctx context.Context, urls []string, divisionMode DivisionModeMapDetails, delta DivisionMapDelta) error {
+func SendMapChangeNotification(ctx context.Context, urls []string, divisionMode DivisionModeMapDetails, delta DivisionMapDelta) error {
 	notificationTitle := fmt.Sprintf("Map change in %s!", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
 	notificationMessage := "No previous map information available"
 	color := "#800080"
@@ -122,5 +122,5 @@ func SendDiscordMapChangeNotification(ctx context.Context, urls []string, divisi
 		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name) + "\n\n" + delta.Details
 	}
 
-	return SendDiscordNotification(ctx, urls, notificationTitle, notificationMessage, color)
+	return SendNotification(ctx, urls, notificationTitle, notificationMessage, color)
 }

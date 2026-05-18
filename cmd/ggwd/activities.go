@@ -205,9 +205,9 @@ func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig
 		dm.divisionName = currentDivisionMap.divisionName
 		dm.gameMode = currentDivisionMap.gameMode
 		dm.mapInfo = currentDivisionMap.mapInfo
-		err = SendDiscordMapChangeNotification(ctx, notifierConfig.ShoutrrrEndpoints, dm, dmd)
+		err = SendMapChangeNotification(ctx, notifierConfig.ShoutrrrEndpoints, dm, dmd)
 		if err != nil {
-			return fmt.Errorf("send discord notification: %w", err)
+			return fmt.Errorf("send notification: %w", err)
 		}
 
 		err = db.UpsertDivisionMapNotification(ctx, *currentDivisionMap)
