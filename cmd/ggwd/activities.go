@@ -115,7 +115,7 @@ func RunMapFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig c
 
 func (a *Activities) NotifyAboutMapChangeActivity(ctx context.Context, input NotifierInput) (NotifierResult, error) {
 	for _, dm := range a.Config.Watchdogs.CompetitiveMaps.NotifyAbout {
-		err := RunNotifyAboutMapChange(ctx, a.Config.Database, a.Config.NotifierAPI.Discord, dm)
+		err := RunNotifyAboutMapChange(ctx, a.Config.Database, a.Config.NotifierAPI, dm)
 		if err != nil {
 			return NotifierResult{
 				Success: false,
@@ -154,17 +154,18 @@ func (dmmd *DivisionModeMapDetails) CompareWithNotification(lastNotification *Di
 		}
 		if lastNotification.mapInfo.MaxErrorDistance != dmmd.mapInfo.MaxErrorDistance {
 			delta.MapDetailsChanged = true
-			msg := fmt.Sprintf("max error distance changed: %d -> %d", lastNotification.mapInfo.MaxErrorDistance, dmmd.mapInfo.MaxErrorDistance)
+			msg := fmt.Sprintf("max error distance: %d → %d (%+d)", lastNotification.mapInfo.MaxErrorDistance, dmmd.mapInfo.MaxErrorDistance, dmmd.mapInfo.MaxErrorDistance-lastNotification.mapInfo.MaxErrorDistance)
 			changes = append(changes, msg)
 		}
 		if lastNotification.mapInfo.CoordinateCount != dmmd.mapInfo.CoordinateCount {
 			delta.MapDetailsChanged = true
-			msg := fmt.Sprintf("coordinate count changed: %d -> %d", lastNotification.mapInfo.CoordinateCount, dmmd.mapInfo.CoordinateCount)
+			msg := fmt.Sprintf("location count: %d → %d (%+d)", lastNotification.mapInfo.CoordinateCount, dmmd.mapInfo.CoordinateCount, dmmd.mapInfo.CoordinateCount-lastNotification.mapInfo.CoordinateCount)
 			changes = append(changes, msg)
 		}
 		if !lastNotification.mapInfo.UpdatedAt.Equal(dmmd.mapInfo.UpdatedAt) {
 			delta.MapDetailsChanged = true
-			msg := fmt.Sprintf("updatedAt changed: %s -> %s", lastNotification.mapInfo.UpdatedAt.Format(time.RFC1123), dmmd.mapInfo.UpdatedAt.Format(time.RFC1123))
+			timeDiff := dmmd.mapInfo.UpdatedAt.Sub(lastNotification.mapInfo.UpdatedAt)
+			msg := fmt.Sprintf("updated: %s → %s (%s)", lastNotification.mapInfo.UpdatedAt.Format(time.RFC1123), dmmd.mapInfo.UpdatedAt.Format(time.RFC1123), timeDiff.String())
 			changes = append(changes, msg)
 		}
 		if len(changes) > 0 {
@@ -175,7 +176,7 @@ func (dmmd *DivisionModeMapDetails) CompareWithNotification(lastNotification *Di
 	return delta
 }
 
-func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig, discordConfig config.DiscordConfig, dm config.NotifyAboutDivisionModeConfig) error {
+func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig, notifierConfig config.NotifierAPIConfig, dm config.NotifyAboutDivisionModeConfig) error {
 	db := NewDB(dbConfig.URL)
 
 	noPreviousNotifications := false
@@ -204,7 +205,7 @@ func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig
 		dm.divisionName = currentDivisionMap.divisionName
 		dm.gameMode = currentDivisionMap.gameMode
 		dm.mapInfo = currentDivisionMap.mapInfo
-		err = SendDiscordMapChangeNotification(ctx, discordConfig, dm, dmd)
+		err = SendDiscordMapChangeNotification(ctx, notifierConfig.ShoutrrrEndpoints, dm, dmd)
 		if err != nil {
 			return fmt.Errorf("send discord notification: %w", err)
 		}

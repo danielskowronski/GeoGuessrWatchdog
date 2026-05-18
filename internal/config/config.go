@@ -36,13 +36,7 @@ type GeoguessrAPIConfig struct {
 }
 
 type NotifierAPIConfig struct {
-	Target  *string       `koanf:"target"`
-	Discord DiscordConfig `koanf:"discord"`
-}
-
-type DiscordConfig struct {
-	BotToken  string   `koanf:"botToken"`
-	Receivers []string `koanf:"receivers"`
+	ShoutrrrEndpoints []string `koanf:"shoutrrr"`
 }
 
 type WatchdogsConfig struct {
@@ -111,8 +105,6 @@ func Load(path string) (*Config, error) {
 		"geoguessrApi.proxy":          "",
 		"geoguessrApi.timeoutSeconds": 30,
 
-		"notifierApi.target": "",
-
 		"watchdogs.CompetitiveMaps.enabled":                       true,
 		"watchdogs.CompetitiveMaps.scheduleFrequencyHours":        6,
 		"watchdogs.CompetitiveMaps.temporalAdvanced.workflowName": "GGWDCompetitiveMapsWorkflow",
@@ -151,7 +143,7 @@ func Load(path string) (*Config, error) {
 			key = strings.TrimPrefix(key, ENV_VAR_PREFIX)
 			key = strings.ReplaceAll(key, "_", ".")
 
-			if key == "watchdogs.CompetitiveMaps.notifyAbout" || key == "watchdogs.UserStats.observeUsers" || key == "notifierApi.discord.receivers" {
+			if key == "watchdogs.CompetitiveMaps.notifyAbout" || key == "watchdogs.UserStats.observeUsers" || key == "notifierApi.shoutrrr" {
 				// split by comma for these list values
 				parts := strings.Split(value, ",")
 				values := make([]string, 0, len(parts))

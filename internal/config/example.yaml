@@ -15,11 +15,8 @@ geoguessrApi:
   timeoutSeconds: 30
 
 notifierApi:
-  target: "discord"  # "discord" or null to disable notifications
-  discord:
-    botToken: bot_token
-    receivers:
-      - channel_id  # Discord user ID or channel ID
+  shoutrrr: []  # see https://containrrr.dev/shoutrrr/v0.8/services/discord/
+  #  - "discord://webhook_token@webhook_id"
 
 watchdogs:
   CompetitiveMaps:

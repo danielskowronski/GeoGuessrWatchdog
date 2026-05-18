@@ -3,40 +3,49 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/url"
 
-	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
-	"github.com/nikoksr/notify"
-	"github.com/nikoksr/notify/service/discord"
+	"github.com/containrrr/shoutrrr"
+	"github.com/containrrr/shoutrrr/pkg/types"
 )
 
-func SendDiscordNotification(ctx context.Context, cfg config.DiscordConfig, title string, message string) error {
-	if cfg.BotToken == "" {
-		return fmt.Errorf("discord bot token is empty")
-	}
-	if len(cfg.Receivers) == 0 {
-		return fmt.Errorf("discord receivers list is empty")
+func SendDiscordNotification(ctx context.Context, urls []string, title string, message string, color string) error {
+	if len(urls) == 0 {
+		return nil
 	}
 
-	session := discord.DefaultSession()
-	discordSvc := discord.New()
-	discordSvc.SetClient(session)
-
-	if err := discordSvc.AuthenticateWithBotToken(cfg.BotToken); err != nil {
-		return fmt.Errorf("authenticate discord bot: %w", err)
-	}
-
-	for _, receiver := range cfg.Receivers {
-		if receiver == "" {
-			return fmt.Errorf("discord receiver/channel ID is empty")
+	for i, urlStr := range urls {
+		u, err := url.Parse(urlStr)
+		if err != nil {
+			return fmt.Errorf("parse shoutrrr URL: %w", err)
 		}
-		discordSvc.AddReceivers(receiver)
+		if u.Scheme == "discord" { // this hack is needed because of https://github.com/containrrr/shoutrrr/issues/396
+			q := u.Query()
+			q.Set("splitLines", "false")
+			u.RawQuery = q.Encode()
+			urls[i] = u.String()
+		}
+	}
+	sender, err := shoutrrr.CreateSender(urls...)
+	if err != nil {
+		return fmt.Errorf("create shoutrrr sender: %w", err)
 	}
 
-	notifier := notify.New()
-	notifier.UseServices(discordSvc)
+	if color == "" {
+		color = "#FFFFFF"
+	}
 
-	if err := notifier.Send(ctx, title, message); err != nil {
-		return fmt.Errorf("send discord notification: %w", err)
+	params := &types.Params{
+		"title":      title,
+		"color":      color,
+		"splitlines": "false", // this doesn't work directly
+	}
+
+	errorsList := sender.Send(message, params)
+	for _, err := range errorsList {
+		if err != nil {
+			return fmt.Errorf("send shoutrrr notification: %w", err)
+		}
 	}
 
 	return nil
@@ -57,17 +66,19 @@ func formatMapUrl(mapID string, mapName string) string {
 	return fmt.Sprintf("[%s](https://www.geoguessr.com/maps/%s)", mapName, mapID)
 }
 
-func SendDiscordMapChangeNotification(ctx context.Context, cfg config.DiscordConfig, divisionMode DivisionModeMapDetails, delta DivisionMapDelta) error {
+func SendDiscordMapChangeNotification(ctx context.Context, urls []string, divisionMode DivisionModeMapDetails, delta DivisionMapDelta) error {
 	notificationTitle := fmt.Sprintf("Map change in %s!", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
 	notificationMessage := "No previous map information available"
+	color := "#800080"
 
 	if delta.MapPointerChanged {
 		notificationTitle = fmt.Sprintf("New map assigned for %s", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
 		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name)
+		color = "#FF0000"
 	} else if delta.MapDetailsChanged {
 		notificationTitle = fmt.Sprintf("Map was updated for %s", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
 		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name) + "\n\n" + delta.Details
 	}
 
-	return SendDiscordNotification(ctx, cfg, notificationTitle, notificationMessage)
+	return SendDiscordNotification(ctx, urls, notificationTitle, notificationMessage, color)
 }

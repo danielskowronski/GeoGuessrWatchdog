@@ -62,28 +62,6 @@ DB=temporal
 
 also update `config_dockercompose.yaml`
 
-### Discord bot
+### Discord notifications
 
-Assuming channel on server
-
-1. Go to https://discord.com/developers/applications/
-2. Create bot
-3. In *Install* disable public link
-4. In *Bot* set:
-   1. *Public* to disabled
-   2. *Permissions* to *send messages*
-   3. Click *Token* to get token
-5. In *OAuth* set:
-   1. *Scopes* to *bot*
-   2. *Permissions* to *send messages*
-   3. *Type* to *guild* (this is server)
-   4. Open generated link and install on desired server
-6. Obtain channel ID (right click on channel and select relevant option)
-
-set overrides via env:
-
-```bash
-export GGWD_notifierApi_target=discord
-export GGWD_notifierApi_discord_botToken='LONG_TOKEN_HERE'
-export GGWD_notifierApi_discord_receivers=NUMERICAL_ID_1,NUMERICAL_ID_2
-```
+Follow https://containrrr.dev/shoutrrr/v0.8/services/discord/ (or other target in Shoutrrr) to get URL. Set it in env var `GGWD_notifierApi_shoutrrr` (multiple URLs - comma separated).
