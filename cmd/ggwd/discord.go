@@ -9,45 +9,87 @@ import (
 	"github.com/containrrr/shoutrrr/pkg/types"
 )
 
+const (
+	SHOUTRRR_URI_KEY_PREPEND = "ggwd_prepend"
+	SHOUTRRR_URI_KEY_APPEND  = "ggwd_append"
+)
+
+type ShoutrrrExtraOptions struct {
+	Append  string
+	Prepend string
+}
+
+func ParseShoutrrrUri(rawURL string) (string, ShoutrrrExtraOptions, error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", ShoutrrrExtraOptions{}, fmt.Errorf("parse shoutrrr url: %s", err)
+	}
+	extraOptions := ShoutrrrExtraOptions{}
+	query := u.Query()
+	extraOptions.Append = query.Get(SHOUTRRR_URI_KEY_APPEND)
+	extraOptions.Prepend = query.Get(SHOUTRRR_URI_KEY_PREPEND)
+	query.Del(SHOUTRRR_URI_KEY_APPEND)
+	query.Del(SHOUTRRR_URI_KEY_PREPEND)
+	u.RawQuery = query.Encode()
+	return u.String(), extraOptions, nil
+}
+func PatchShoutrrrUriToSetSplitLinesFalse(rawURL string) (string, error) {
+	// hack needed until https://github.com/containrrr/shoutrrr/pull/498 is merged
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL, fmt.Errorf("parse shoutrrr URL: %w", err)
+	}
+	if u.Scheme == "discord" {
+		q := u.Query()
+		q.Set("splitLines", "false")
+		u.RawQuery = q.Encode()
+		return u.String(), nil
+	}
+	return rawURL, nil
+}
+
 func SendDiscordNotification(ctx context.Context, urls []string, title string, message string, color string) error {
 	if len(urls) == 0 {
 		return nil
 	}
+	errorsList := make([]error, 0)
 
-	for i, urlStr := range urls {
-		u, err := url.Parse(urlStr)
+	for _, urlRaw := range urls {
+		urlRaw, err := PatchShoutrrrUriToSetSplitLinesFalse(urlRaw)
+		if err != nil {
+			return fmt.Errorf("patch shoutrrr URL: %w", err)
+		}
+		url, extraOptions, err := ParseShoutrrrUri(urlRaw)
 		if err != nil {
 			return fmt.Errorf("parse shoutrrr URL: %w", err)
 		}
-		if u.Scheme == "discord" { // this hack is needed because of https://github.com/containrrr/shoutrrr/issues/396
-			q := u.Query()
-			q.Set("splitLines", "false")
-			u.RawQuery = q.Encode()
-			urls[i] = u.String()
+		if extraOptions.Prepend != "" {
+			message = extraOptions.Prepend + message
 		}
-	}
-	sender, err := shoutrrr.CreateSender(urls...)
-	if err != nil {
-		return fmt.Errorf("create shoutrrr sender: %w", err)
+		if extraOptions.Append != "" {
+			message = message + extraOptions.Append
+		}
+
+		sender, err := shoutrrr.CreateSender([]string{url}...)
+		if err != nil {
+			return fmt.Errorf("create shoutrrr sender: %w", err)
+		}
+		if color == "" {
+			color = "#FFFFFF"
+		}
+		params := &types.Params{
+			"title":      title,
+			"color":      color,
+			"splitLines": "false",
+		}
+		errorsList = append(errorsList, sender.Send(message, params)...)
 	}
 
-	if color == "" {
-		color = "#FFFFFF"
-	}
-
-	params := &types.Params{
-		"title":      title,
-		"color":      color,
-		"splitlines": "false", // this doesn't work directly
-	}
-
-	errorsList := sender.Send(message, params)
 	for _, err := range errorsList {
 		if err != nil {
 			return fmt.Errorf("send shoutrrr notification: %w", err)
 		}
 	}
-
 	return nil
 }
 

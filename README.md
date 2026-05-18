@@ -64,4 +64,15 @@ also update `config_dockercompose.yaml`
 
 ### Discord notifications
 
-Follow https://containrrr.dev/shoutrrr/v0.8/services/discord/ (or other target in Shoutrrr) to get URL. Set it in env var `GGWD_notifierApi_shoutrrr` (multiple URLs - comma separated).
+Follow https://containrrr.dev/shoutrrr/v0.8/services/discord/ (or other target in Shoutrrr) to get URI. Set it in env var `GGWD_notifierApi_shoutrrr` (multiple URLs - comma separated).
+
+Each URI can also have following params:
+
+- `ggwd_prepend` - text added before each message body; useful to tag some people
+- `ggwd_prepend` - text added after each message body; useful to tag some people
+
+Those `ggwd_*` URI params are not valid Shoutrrr parameters and are stripped before passing to library. Example:
+
+```
+GGWD_notifierApi_shoutrrr="discord://TOKEN@WEBHOOK?ggwd_append=%20appended&ggwd_prepend=prepended%20"
+```
