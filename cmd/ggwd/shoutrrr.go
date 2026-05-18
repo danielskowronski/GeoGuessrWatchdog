@@ -94,17 +94,20 @@ func SendNotification(ctx context.Context, urls []string, title string, message 
 }
 
 func NiceDivisionModeString(divisionName string, gameMode string) string {
+	// const mapping for known game modes to make them look nicer in notifications
 	mode := gameMode
-	if mode == "standardDuels" {
+	switch mode {
+	case "standardDuels":
 		mode = "Moving"
-	} else if mode == "noMoveDuels" {
+	case "noMoveDuels":
 		mode = "NoMove"
-	} else if mode == "nmpzDuels" {
+	case "nmpzDuels":
 		mode = "NMPZ"
 	}
 	return fmt.Sprintf("%s - %s", divisionName, mode)
 }
 func formatMapUrl(mapID string, mapName string) string {
+	// uses const URL prefix which will probably never change
 	return fmt.Sprintf("[%s](https://www.geoguessr.com/maps/%s)", mapName, mapID)
 }
 
@@ -119,7 +122,22 @@ func SendMapChangeNotification(ctx context.Context, urls []string, divisionMode 
 		color = "#FF0000"
 	} else if delta.MapDetailsChanged {
 		notificationTitle = fmt.Sprintf("Map was updated for %s", NiceDivisionModeString(divisionMode.divisionName, divisionMode.gameMode))
-		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name) + "\n\n" + delta.Details
+
+		messageDetails := "Map details changed:\n"
+		if delta.BoundsDelta.Changed {
+			messageDetails += fmt.Sprintf("- %s: %s → %s\n", "Boundaries", delta.BoundsDelta.OldValue, delta.BoundsDelta.NewValue)
+		}
+		if delta.MaxErrDistanceDelta.Changed {
+			messageDetails += fmt.Sprintf("- %s: %s → %s (%s)\n", "Max error distance", delta.MaxErrDistanceDelta.OldValue, delta.MaxErrDistanceDelta.NewValue, delta.MaxErrDistanceDelta.Difference)
+		}
+		if delta.LocationCountDelta.Changed {
+			messageDetails += fmt.Sprintf("- %s: %s → %s (%s)\n", "Locations", delta.LocationCountDelta.OldValue, delta.LocationCountDelta.NewValue, delta.LocationCountDelta.Difference)
+		}
+		if delta.UpdatedAtDelta.Changed {
+			messageDetails += fmt.Sprintf("- %s: %s → %s (%s)\n", "Updated at", delta.UpdatedAtDelta.OldValue, delta.UpdatedAtDelta.NewValue, delta.UpdatedAtDelta.Difference)
+		}
+
+		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name) + "\n\n" + messageDetails
 	}
 
 	return SendNotification(ctx, urls, notificationTitle, notificationMessage, color)

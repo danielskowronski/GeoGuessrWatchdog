@@ -25,6 +25,11 @@ watchdogs:
     notifyAbout:
       - divisionName: "Master I"
         gameMode: "standardDuels"  # "standardDuels", "noMoveDuels", "nmpzDuels"
+    ignoreMapChanges:
+      boundsChanges: true
+      maxErrDistanceChanges: true
+      locationCountChanges: false
+      updatedAtChanges: false
     temporalAdvanced:
       workflowName: "GGWDCompetitiveMapsWorkflow"
       fanoutActivity:

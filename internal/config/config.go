@@ -48,7 +48,15 @@ type WatchdogCompetitiveMaps struct {
 	Enabled                bool                            `koanf:"enabled"`
 	ScheduleFrequencyHours int                             `koanf:"scheduleFrequencyHours"`
 	NotifyAbout            []NotifyAboutDivisionModeConfig `koanf:"notifyAbout"`
+	IgnoreMapChanges       IgnoreMapChange                 `koanf:"ignoreMapChanges"`
 	Temporal               TemporalAdvanced                `koanf:"temporalAdvanced"`
+}
+
+type IgnoreMapChange struct {
+	BoundsChange         bool `koanf:"boundsChanges"`
+	MaxErrDistanceChange bool `koanf:"maxErrDistanceChanges"`
+	LocationCountChange  bool `koanf:"locationCountChanges"`
+	UpdatedAtChange      bool `koanf:"updatedAtChanges"`
 }
 
 type ScheduleDailyConfig struct {
@@ -109,6 +117,11 @@ func Load(path string) (*Config, error) {
 		"watchdogs.CompetitiveMaps.scheduleFrequencyHours":        6,
 		"watchdogs.CompetitiveMaps.temporalAdvanced.workflowName": "GGWDCompetitiveMapsWorkflow",
 		"watchdogs.CompetitiveMaps.temporalAdvanced.parallelism":  DefaultTemporalOptions_Parallelism,
+
+		"watchdogs.CompetitiveMaps.ignoreMapChanges.boundsChanges":         true,
+		"watchdogs.CompetitiveMaps.ignoreMapChanges.maxErrDistanceChanges": true,
+		"watchdogs.CompetitiveMaps.ignoreMapChanges.locationCountChanges":  false,
+		"watchdogs.CompetitiveMaps.ignoreMapChanges.updatedAtChanges":      false,
 
 		"watchdogs.CompetitiveMaps.temporalAdvanced.fanoutActivity.startToCloseTimeoutSeconds":  DefaultTemporalOptions_StartToCloseTimeoutSeconds,
 		"watchdogs.CompetitiveMaps.temporalAdvanced.fanoutActivity.retryInitialIntervalSeconds": DefaultTemporalOptions_RetryInitialIntervalSeconds,

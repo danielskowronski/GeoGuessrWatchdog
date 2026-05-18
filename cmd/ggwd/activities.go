@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
@@ -115,7 +114,7 @@ func RunMapFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig c
 
 func (a *Activities) NotifyAboutMapChangeActivity(ctx context.Context, input NotifierInput) (NotifierResult, error) {
 	for _, dm := range a.Config.Watchdogs.CompetitiveMaps.NotifyAbout {
-		err := RunNotifyAboutMapChange(ctx, a.Config.Database, a.Config.NotifierAPI, dm)
+		err := RunNotifyAboutMapChange(ctx, a.Config.Database, a.Config.NotifierAPI, dm, a.Config.Watchdogs.CompetitiveMaps.IgnoreMapChanges)
 		if err != nil {
 			return NotifierResult{
 				Success: false,
@@ -128,55 +127,74 @@ func (a *Activities) NotifyAboutMapChangeActivity(ctx context.Context, input Not
 	}, nil
 }
 
+type MapParamDelta struct {
+	Changed    bool
+	OldValue   string
+	NewValue   string
+	Difference string
+}
 type DivisionMapDelta struct {
 	MapPointerChanged bool
 	MapDetailsChanged bool
-	Details           string
+
+	BoundsDelta         MapParamDelta
+	MaxErrDistanceDelta MapParamDelta
+	LocationCountDelta  MapParamDelta
+	UpdatedAtDelta      MapParamDelta
 }
 
-func (dmmd *DivisionModeMapDetails) CompareWithNotification(lastNotification *DivisionModeMapDetails) DivisionMapDelta {
-	// TODO: cover it woth feature flags
+func (dmmd *DivisionModeMapDetails) CompareWithNotification(lastNotification *DivisionModeMapDetails, ignoreMapChanges config.IgnoreMapChange) DivisionMapDelta {
+	// this returns just values, formatted to string; expected to be machine-readable, not user-friendly
 	delta := DivisionMapDelta{}
-	delta.Details = "Maps didn't change"
 
 	if lastNotification.mapInfo.ID != dmmd.mapInfo.ID {
 		delta.MapPointerChanged = true
-		delta.Details = "New map assigned"
 	} else {
-		changes := []string{}
-		if lastNotification.mapInfo.BoundsMinLat != dmmd.mapInfo.BoundsMinLat ||
+		if !ignoreMapChanges.BoundsChange && (lastNotification.mapInfo.BoundsMinLat != dmmd.mapInfo.BoundsMinLat ||
 			lastNotification.mapInfo.BoundsMinLng != dmmd.mapInfo.BoundsMinLng ||
 			lastNotification.mapInfo.BoundsMaxLat != dmmd.mapInfo.BoundsMaxLat ||
-			lastNotification.mapInfo.BoundsMaxLng != dmmd.mapInfo.BoundsMaxLng {
+			lastNotification.mapInfo.BoundsMaxLng != dmmd.mapInfo.BoundsMaxLng) {
 			delta.MapDetailsChanged = true
-			msg := "boundaries changed: " + lastNotification.mapInfo.Coordinates() + " -> " + dmmd.mapInfo.Coordinates()
-			changes = append(changes, msg)
+			delta.BoundsDelta = MapParamDelta{
+				Changed:  true,
+				OldValue: lastNotification.mapInfo.Coordinates(),
+				NewValue: dmmd.mapInfo.Coordinates(),
+			}
 		}
-		if lastNotification.mapInfo.MaxErrorDistance != dmmd.mapInfo.MaxErrorDistance {
+		if !ignoreMapChanges.MaxErrDistanceChange && lastNotification.mapInfo.MaxErrorDistance != dmmd.mapInfo.MaxErrorDistance {
 			delta.MapDetailsChanged = true
-			msg := fmt.Sprintf("max error distance: %d → %d (%+d)", lastNotification.mapInfo.MaxErrorDistance, dmmd.mapInfo.MaxErrorDistance, dmmd.mapInfo.MaxErrorDistance-lastNotification.mapInfo.MaxErrorDistance)
-			changes = append(changes, msg)
+			delta.MaxErrDistanceDelta = MapParamDelta{
+				Changed:    true,
+				OldValue:   fmt.Sprintf("%d", lastNotification.mapInfo.MaxErrorDistance),
+				NewValue:   fmt.Sprintf("%d", dmmd.mapInfo.MaxErrorDistance),
+				Difference: fmt.Sprintf("%+d", dmmd.mapInfo.MaxErrorDistance-lastNotification.mapInfo.MaxErrorDistance),
+			}
 		}
-		if lastNotification.mapInfo.CoordinateCount != dmmd.mapInfo.CoordinateCount {
+		if !ignoreMapChanges.LocationCountChange && lastNotification.mapInfo.CoordinateCount != dmmd.mapInfo.CoordinateCount {
 			delta.MapDetailsChanged = true
-			msg := fmt.Sprintf("location count: %d → %d (%+d)", lastNotification.mapInfo.CoordinateCount, dmmd.mapInfo.CoordinateCount, dmmd.mapInfo.CoordinateCount-lastNotification.mapInfo.CoordinateCount)
-			changes = append(changes, msg)
+			delta.LocationCountDelta = MapParamDelta{
+				Changed:    true,
+				OldValue:   fmt.Sprintf("%d", lastNotification.mapInfo.CoordinateCount),
+				NewValue:   fmt.Sprintf("%d", dmmd.mapInfo.CoordinateCount),
+				Difference: fmt.Sprintf("%+d", dmmd.mapInfo.CoordinateCount-lastNotification.mapInfo.CoordinateCount),
+			}
 		}
-		if !lastNotification.mapInfo.UpdatedAt.Equal(dmmd.mapInfo.UpdatedAt) {
+		if !ignoreMapChanges.UpdatedAtChange && !lastNotification.mapInfo.UpdatedAt.Equal(dmmd.mapInfo.UpdatedAt) {
 			delta.MapDetailsChanged = true
 			timeDiff := dmmd.mapInfo.UpdatedAt.Sub(lastNotification.mapInfo.UpdatedAt)
-			msg := fmt.Sprintf("updated: %s → %s (%s)", lastNotification.mapInfo.UpdatedAt.Format(time.RFC1123), dmmd.mapInfo.UpdatedAt.Format(time.RFC1123), timeDiff.String())
-			changes = append(changes, msg)
-		}
-		if len(changes) > 0 {
-			delta.Details = "Map details changed:\n- " + strings.Join(changes, "\n- ")
+			delta.UpdatedAtDelta = MapParamDelta{
+				Changed:    true,
+				OldValue:   lastNotification.mapInfo.UpdatedAt.Format(time.RFC1123),
+				NewValue:   dmmd.mapInfo.UpdatedAt.Format(time.RFC1123),
+				Difference: timeDiff.String(),
+			}
 		}
 	}
 
 	return delta
 }
 
-func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig, notifierConfig config.NotifierAPIConfig, dm config.NotifyAboutDivisionModeConfig) error {
+func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig, notifierConfig config.NotifierAPIConfig, dm config.NotifyAboutDivisionModeConfig, ignore config.IgnoreMapChange) error {
 	db := NewDB(dbConfig.URL)
 
 	noPreviousNotifications := false
@@ -195,7 +213,7 @@ func RunNotifyAboutMapChange(ctx context.Context, dbConfig config.DatabaseConfig
 			return err
 		}
 	} else {
-		dmd = currentDivisionMap.CompareWithNotification(lastNotification)
+		dmd = currentDivisionMap.CompareWithNotification(lastNotification, ignore)
 	}
 
 	shouldNotify := noPreviousNotifications || dmd.MapPointerChanged || dmd.MapDetailsChanged
