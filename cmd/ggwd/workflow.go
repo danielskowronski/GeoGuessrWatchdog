@@ -63,7 +63,7 @@ func FetchDivisionsMapsWorkflow(ctx workflow.Context, input FetchDivisionsMapsWo
 	}
 
 	if input.TriggerNotifications {
-		// TODO: analyze results - we may skip notifier queries to db
+		// always running to handle situations where some activities failed before
 		if err := workflow.ExecuteActivity(ctx, (*Activities).NotifyAboutMapChangeActivity, NotifierInput{}).Get(ctx, nil); err != nil {
 			return err
 		}

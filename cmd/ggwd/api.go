@@ -7,18 +7,24 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/apischema"
+	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
 )
 
 type ApiClient struct {
 	client      *http.Client
 	apiBase     string
 	cookieValue string
+
+	cacheConfig config.GeoguessrAPICacheConfig
 }
 
-func NewAPIClient(httpProxyURL string, apiBase string, cookie string) (*ApiClient, error) {
+func NewAPIClient(httpProxyURL string, apiBase string, cookie string, cache config.GeoguessrAPICacheConfig) (*ApiClient, error) {
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	if httpProxyURL != "" {
 		u, err := url.Parse(httpProxyURL)
@@ -34,7 +40,24 @@ func NewAPIClient(httpProxyURL string, apiBase string, cookie string) (*ApiClien
 		},
 		apiBase:     apiBase,
 		cookieValue: cookie,
+		cacheConfig: cache,
 	}, nil
+}
+
+func (a *ApiClient) CacheResponse(targetURL string, responseBody []byte) error {
+	if !a.cacheConfig.Enabled {
+		return nil
+	}
+	url := strings.ReplaceAll(targetURL, a.apiBase, "")
+	targetPath := fmt.Sprintf("%s/%s", a.cacheConfig.CachePath, url)
+	targetDir := filepath.Dir(targetPath)
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		return fmt.Errorf("failed to create cache directory: %w", err)
+	}
+	if err := os.WriteFile(targetPath, responseBody, 0644); err != nil {
+		return fmt.Errorf("failed to write cache file: %w", err)
+	}
+	return nil
 }
 
 func (a *ApiClient) FetchJSON(ctx context.Context, targetURL string) (json.RawMessage, int, error) {
@@ -65,6 +88,9 @@ func (a *ApiClient) FetchJSON(ctx context.Context, targetURL string) (json.RawMe
 	if err := json.Unmarshal(body, &raw); err != nil {
 		return nil, resp.StatusCode, fmt.Errorf("invalid JSON: %w", err)
 	}
+
+	a.CacheResponse(targetURL, body)
+
 	return raw, resp.StatusCode, nil
 }
 

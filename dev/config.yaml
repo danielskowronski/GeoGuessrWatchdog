@@ -10,6 +10,9 @@ geoguessrApi:
   baseUrl: https://www.geoguessr.com/api
   proxy: http://gluetun:8888  # or leave empty for no proxy
   timeoutSeconds: 30
+  cache:
+    enabled: true
+    cachePath: /srv/ggwd_cache
 
 notifierApi:
   shoutrrr: []  # see https://containrrr.dev/shoutrrr/v0.8/services/discord/

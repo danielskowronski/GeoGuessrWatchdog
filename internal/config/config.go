@@ -28,11 +28,16 @@ type TemporalConfig struct {
 	TaskQueue string `koanf:"taskQueue"`
 }
 
+type GeoguessrAPICacheConfig struct {
+	Enabled   bool   `koanf:"enabled"`
+	CachePath string `koanf:"cachePath"`
+}
 type GeoguessrAPIConfig struct {
-	BaseURL        string `koanf:"baseUrl"`
-	Cookie         string `koanf:"cookie"`
-	Proxy          string `koanf:"proxy"`
-	TimeoutSeconds int    `koanf:"timeoutSeconds"`
+	BaseURL        string                  `koanf:"baseUrl"`
+	Cookie         string                  `koanf:"cookie"`
+	Proxy          string                  `koanf:"proxy"`
+	TimeoutSeconds int                     `koanf:"timeoutSeconds"`
+	Cache          GeoguessrAPICacheConfig `koanf:"cache"`
 }
 
 type NotifierAPIConfig struct {

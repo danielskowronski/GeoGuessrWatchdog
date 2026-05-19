@@ -13,6 +13,9 @@ geoguessrApi:
   cookie: cookie
   proxy: http://gluetun:8888  # or leave empty for no proxy
   timeoutSeconds: 30
+  cache:
+    enabled: true
+    cachePath: /tmp/ggwd_cache
 
 notifierApi:
   shoutrrr: []  # see https://containrrr.dev/shoutrrr/v0.8/services/discord/
