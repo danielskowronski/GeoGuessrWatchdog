@@ -1,17 +1,16 @@
 # Local dev
 
+## API
 
-```bash
-docker compose up --build -d
-docker compose run --rm worker help
-docker compose run --rm worker trigger-workflow FetchUserStatsAndProgress
-```
+See [docs](../docs/README.md) to get cookie.
 
 example `ggwd.env`:
 
 ```
 GGWD_geoguessrApi_cookie=...
 ```
+
+## VPN
 
 example `vpn.env` for NordVPN:
 
@@ -26,6 +25,10 @@ VPN_TYPE="wireguard"
 SERVER_COUNTRIES="Poland"
 ```
 
+## DBs
+
+### App DB
+
 example `postgres_app.env`:
 
 ```
@@ -33,6 +36,10 @@ POSTGRES_USER=app
 POSTGRES_PASSWORD=app
 POSTGRES_DB=app
 ```
+
+also update `config.yaml`
+
+### Temporal DB
 
 example `postgres_temporal.env`:
 
@@ -46,9 +53,7 @@ POSTGRES_DB=temporal
 DB=temporal
 ```
 
-also update `config_dockercompose.yaml`
-
-### External notifications
+## External notifications
 
 Follow https://containrrr.dev/shoutrrr/v0.8/services/discord/ (or other target in Shoutrrr) to get URI. Set it in env var `GGWD_notifierApi_shoutrrr` (multiple URLs - comma separated).
 

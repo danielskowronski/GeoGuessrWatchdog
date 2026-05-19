@@ -6,16 +6,31 @@ Periodically check GeoGuessr API for various things (like current map in Competi
 
 ## Dev
 
+### Requirements
+
+```bash
+brew install sqlc make
+```
+
 ### Code generation
 
 ```bash
-brew install sqlc
-
-# TODO: makefile?
-
-cd internal/db && sqlc generate; cd -
+make sqlc
 ```
 
 ### Local dev env
 
-[dev/README.md](./dev/README.md)
+Set up according to [dev/README.md](./dev/README.md)
+
+```bash
+make local-run
+
+make local-trigger WORKFLOW=FetchDivisionsMaps
+make local-trigger WORKFLOW=FetchUserStatsAndProgress
+```
+
+Endpoints:
+
+- [Temporal](http://localhost:8080/)
+- [cache](http://localhost:10001/)
+- [DB](postgres://app:app@localhost:5432/app)
