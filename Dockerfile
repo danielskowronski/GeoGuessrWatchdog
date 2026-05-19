@@ -1,5 +1,7 @@
 FROM golang:1.26-alpine AS build
 
+LABEL org.opencontainers.image.source=https://github.com/danielskowronski/GeoGuessrWatchdog
+
 WORKDIR /src
 
 COPY go.mod go.sum ./

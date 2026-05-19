@@ -10,6 +10,8 @@ Periodically check GeoGuessr API for various things (like current map in Competi
 
 ```bash
 brew install sqlc make
+
+docker buildx create --name local --driver docker-container --use
 ```
 
 ### Code generation
@@ -34,3 +36,19 @@ Endpoints:
 - [Temporal](http://localhost:8080/)
 - [cache](http://localhost:10001/)
 - [DB](postgres://app:app@localhost:5432/app)
+
+### Build and push image
+
+All take params:
+
+- `TAG` - tag of Docker image, defaults to `dev`
+- `PLATFORM` - list of buildx platforms to use, defaults to `linux/arm64,linux/amd64`
+
+```bash
+make build
+make push
+make build-and-push
+
+# quick build
+make build-and-push PLATFORM=linux/arm64 TAG=stage
+```
