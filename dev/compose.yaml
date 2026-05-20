@@ -85,6 +85,8 @@ services:
         condition: service_started #service_healthy
       gluetun:
         condition: service_healthy
+    environment:
+      - GGWD_CONFIG_PATH=/etc/ggwd/config.yaml
     env_file:
       - postgres_app.env
       - ggwd.env

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/knadh/koanf/parsers/yaml"
@@ -112,7 +113,7 @@ const (
 	DefaultTemporalOptions_Parallelism                 = 2
 )
 
-func Load(path string) (*Config, error) {
+func Load(pathsCommaSeparated string) (*Config, error) {
 	k := koanf.New(".")
 
 	if err := k.Load(confmap.Provider(map[string]any{
@@ -158,9 +159,16 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 
-	if path != "" {
-		if err := k.Load(file.Provider(path), yaml.Parser()); err != nil {
-			return nil, err
+	if pathsCommaSeparated != "" {
+		paths := strings.Split(pathsCommaSeparated, ",")
+		for _, path := range paths {
+			path = strings.TrimSpace(path)
+			fmt.Printf("loading config from %s ...\n", path)
+			if path != "" {
+				if err := k.Load(file.Provider(path), yaml.Parser()); err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
