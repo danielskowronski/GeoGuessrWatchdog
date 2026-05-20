@@ -36,7 +36,7 @@ func (a *Activities) DivisionFetchActivity(ctx context.Context, input DivisionFe
 }
 
 func RunDivisionFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig) (DivisionFetchResult, error) {
-	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache)
+	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache, map[string]string{})
 	if err != nil {
 		return DivisionFetchResult{}, err
 	}
@@ -83,7 +83,7 @@ func (a *Activities) MapFetchActivity(ctx context.Context, input MapFetchInput) 
 }
 
 func RunMapFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, mapID string) (MapFetchResult, error) {
-	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache)
+	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache, map[string]string{})
 	if err != nil {
 		return MapFetchResult{}, err
 	}
@@ -266,7 +266,7 @@ func (a *Activities) UserProgressFetchActivity(ctx context.Context, input UserPr
 	return result, nil
 }
 func RunUserProgressFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, userID string, fetchID int64) (UserProgressFetchOutput, error) {
-	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache)
+	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache, map[string]string{})
 	if err != nil {
 		return UserProgressFetchOutput{}, err
 	}
@@ -300,7 +300,7 @@ func (a *Activities) UserStatsFetchActivity(ctx context.Context, input UserStats
 }
 
 func RunUserStatsFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, userID string, fetchID int64) (UserStatsFetchOutput, error) {
-	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache)
+	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache, map[string]string{})
 	if err != nil {
 		return UserStatsFetchOutput{}, err
 	}

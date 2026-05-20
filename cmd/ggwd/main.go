@@ -52,6 +52,23 @@ func startWorker() error {
 		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
 
+	if cfg.Preflight.IpInfoCheckEnabled {
+		// FUTURE: this should be reported with exporters
+		fmt.Println("checking public IP...")
+		api, err := NewAPIClient(cfg.GeoguessrAPI.Proxy, cfg.GeoguessrAPI.BaseURL, cfg.GeoguessrAPI.Cookie, cfg.GeoguessrAPI.Cache,
+			map[string]string{
+				cfg.Preflight.IpInfoCheckURL: "public_ip.json",
+			})
+		if err != nil {
+			panic(fmt.Sprintf("failed to create API client: %v", err))
+		}
+		ip, err := api.GetPublicIP(context.Background(), cfg.Preflight.IpInfoCheckURL)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get public IP: %v", err))
+		}
+		fmt.Printf("public IP: %s\n", ip)
+	}
+
 	c := mustTemporalClient(cfg.Temporal)
 	defer c.Close()
 

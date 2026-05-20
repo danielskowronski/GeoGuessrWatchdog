@@ -58,3 +58,7 @@ watchdogs:
         retryMaximumIntervalSeconds: 60
         retryMaximumAttempts: 5
       parallelism: 2
+
+preflight:
+  ipInfoCheckUrl: https://api.ipify.org?format=json
+  ipInfoCheckEnabled: true

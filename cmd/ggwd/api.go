@@ -21,10 +21,11 @@ type ApiClient struct {
 	apiBase     string
 	cookieValue string
 
-	cacheConfig config.GeoguessrAPICacheConfig
+	cacheConfig       config.GeoguessrAPICacheConfig
+	extraCacheTargets map[string]string
 }
 
-func NewAPIClient(httpProxyURL string, apiBase string, cookie string, cache config.GeoguessrAPICacheConfig) (*ApiClient, error) {
+func NewAPIClient(httpProxyURL string, apiBase string, cookie string, cache config.GeoguessrAPICacheConfig, extraCacheTargets map[string]string) (*ApiClient, error) {
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	if httpProxyURL != "" {
 		u, err := url.Parse(httpProxyURL)
@@ -38,18 +39,48 @@ func NewAPIClient(httpProxyURL string, apiBase string, cookie string, cache conf
 			Transport: tr,
 			Timeout:   30 * time.Second, // TODO: parametrize this
 		},
-		apiBase:     apiBase,
-		cookieValue: cookie,
-		cacheConfig: cache,
+		apiBase:           apiBase,
+		cookieValue:       cookie,
+		cacheConfig:       cache,
+		extraCacheTargets: extraCacheTargets,
 	}, nil
+}
+
+func (a *ApiClient) GetPublicIP(ctx context.Context, ipInfoCheckURL string) (string, error) {
+	body, code, err := a.FetchJSON(ctx, ipInfoCheckURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch public IP: %w", err)
+	}
+	if code != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code when fetching public IP: %d", code)
+	}
+	var ipInfo struct {
+		IP string `json:"ip"`
+	}
+	if err := json.Unmarshal(body, &ipInfo); err != nil {
+		return "", fmt.Errorf("failed to parse IP info response: %w", err)
+	}
+	return ipInfo.IP, nil
 }
 
 func (a *ApiClient) CacheResponse(targetURL string, responseBody []byte) error {
 	if !a.cacheConfig.Enabled {
 		return nil
 	}
-	url := strings.ReplaceAll(targetURL, a.apiBase, "")
-	targetPath := fmt.Sprintf("%s/%s", a.cacheConfig.CachePath, url)
+
+	var targetPath string
+	if strings.HasPrefix(targetURL, a.apiBase) {
+		// GeoGuessr API URLs are always cached, path is 1:1 with URL
+		url := strings.ReplaceAll(targetURL, a.apiBase, "")
+		targetPath = fmt.Sprintf("%s/%s", a.cacheConfig.CachePath, url)
+	} else if extraPath, ok := a.extraCacheTargets[targetURL]; ok {
+		// other URLs are cached only if explicitly configured, and then with a fixed path
+		targetPath = fmt.Sprintf("%s/%s", a.cacheConfig.CachePath, extraPath)
+	} else {
+		// not a URL we want to cache
+		return nil
+	}
+
 	targetDir := filepath.Dir(targetPath)
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
 		return fmt.Errorf("failed to create cache directory: %w", err)
@@ -66,10 +97,13 @@ func (a *ApiClient) FetchJSON(ctx context.Context, targetURL string) (json.RawMe
 		return nil, 0, err
 	}
 
-	req.AddCookie(&http.Cookie{
-		Name:  GG_COOKIE_NAME,
-		Value: a.cookieValue,
-	})
+	if strings.HasPrefix(targetURL, a.apiBase) {
+		// only add cookie for GeoGuessr API requests, not for other APIs
+		req.AddCookie(&http.Cookie{
+			Name:  GG_COOKIE_NAME,
+			Value: a.cookieValue,
+		})
+	}
 	// TODO: either clearly indentifying ourselves with User-Agent or spoofing real web browser
 
 	resp, err := a.client.Do(req)

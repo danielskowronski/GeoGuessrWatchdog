@@ -16,6 +16,12 @@ type Config struct {
 	GeoguessrAPI GeoguessrAPIConfig `koanf:"geoguessrApi"`
 	NotifierAPI  NotifierAPIConfig  `koanf:"notifierApi"`
 	Watchdogs    WatchdogsConfig    `koanf:"watchdogs"`
+	Preflight    PreflightConfig    `koanf:"preflight"`
+}
+
+type PreflightConfig struct {
+	IpInfoCheckURL     string `koanf:"ipInfoCheckUrl"`
+	IpInfoCheckEnabled bool   `koanf:"ipInfoCheckEnabled"`
 }
 
 type DatabaseConfig struct {
@@ -145,6 +151,9 @@ func Load(path string) (*Config, error) {
 		"watchdogs.UserStats.temporalAdvanced.fanoutActivity.retryBackoffCoefficient":     DefaultTemporalOptions_RetryBackoffCoefficient,
 		"watchdogs.UserStats.temporalAdvanced.fanoutActivity.retryMaximumIntervalSeconds": DefaultTemporalOptions_RetryMaximumIntervalSeconds,
 		"watchdogs.UserStats.temporalAdvanced.fanoutActivity.retryMaximumAttempts":        DefaultTemporalOptions_RetryMaximumAttempts,
+
+		"preflight.ipInfoCheckUrl":     "https://api.ipify.org?format=json",
+		"preflight.ipInfoCheckEnabled": true,
 	}, "."), nil); err != nil {
 		return nil, err
 	}
