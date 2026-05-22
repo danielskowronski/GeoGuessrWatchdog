@@ -1,0 +1,129 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.shared.workerGeneratedConfigSecretName }}
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  {{ .Values.worker.config.generatedConfigFilename }}: |
+    database:
+      url: {{ printf "postgres://%s:%s@%s:%v/%s?sslmode=disable" .Values.postgres.worker.username (include "stack.secretValue" (list .Values.shared.dbUsersSecretName "worker-password" .Values.postgres.worker.password .)) .Values.postgres.host (.Values.postgres.port | int) .Values.postgres.worker.database | quote }}
+    temporal:
+      address: {{ include "stack.fullname" . }}-temporal-frontend:7233
+      namespace: ggwd
+    geoguessrApi:
+      timeoutSeconds: 30
+      {{- if .Values.worker.config.cookie }}
+      cookie: {{ .Values.worker.config.cookie | quote }}
+      {{- end }}
+      {{- if .Values.cacheStorage.enabled }}
+      cache:
+        enabled: true
+        cachePath: {{ .Values.cacheStorage.path }}
+      {{- end }}
+      {{- if .Values.gluetun.enabled }}
+      proxy: http://{{ include "stack.fullname" . }}-gluetun:{{ .Values.gluetun.httpProxyPort }}
+      {{- end }}
+    {{- if .Values.worker.config.shoutrrrTargets }}
+    notifierApi:
+      shoutrrr:
+      {{- range .Values.worker.config.shoutrrrTargets }}
+        - {{ . | quote }}
+      {{- end }}
+    {{- end }}
+    watchdogs:
+      CompetitiveMaps:
+        enabled: {{ .Values.worker.config.watchdogs.CompetitiveMaps.enabled }}
+        {{- if .Values.worker.config.watchdogs.CompetitiveMaps.notifyAbout }}
+        notifyAbout:
+        {{- range .Values.worker.config.watchdogs.CompetitiveMaps.notifyAbout }}
+          - divisionName: {{ .divisionName | quote }}
+            gameMode: {{ .gameMode | quote }}
+        {{- end }}
+        {{- end }}
+      UserStats:
+        enabled: {{ .Values.worker.config.watchdogs.UserStats.enabled }}
+        {{- if .Values.worker.config.watchdogs.UserStats.observeUsers }}
+        observeUsers:
+        {{- range .Values.worker.config.watchdogs.UserStats.observeUsers }}
+          - {{ . | quote }}
+        {{- end }}
+        {{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stack.fullname" . }}-worker
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+    worker.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "stack.selectorLabels" . | nindent 6 }}
+      worker.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "stack.selectorLabels" . | nindent 8 }}
+        worker.kubernetes.io/component: worker
+        stack.network/worker: "true"
+    spec:
+      imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: worker
+          image: "{{ include "ggwd.image" . }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          {{- with .Values.worker.command }}
+          command: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.worker.args }}
+          args: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: GGWD_CONFIG_PATH
+              value: >-
+                {{ .Values.worker.config.generatedConfigDir }}/{{ .Values.worker.config.generatedConfigFilename }}
+                {{- range .Values.worker.config.extraSecrets }}
+                {{- range .items }}
+                ,{{ .diskPath }}/{{ .secretKey }}
+                {{- end }}
+                {{- end }}
+            {{- range $k, $v := .Values.worker.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: generated-config
+              mountPath: {{ .Values.worker.config.generatedConfigDir }}/{{ .Values.worker.config.generatedConfigFilename }}
+              subPath: {{ .Values.worker.config.generatedConfigFilename }}
+              readOnly: true
+            {{- range .Values.worker.config.extraSecrets }}
+            - name: {{ .name }}
+              mountPath: {{ .diskPath }}
+              subPath: {{ .secretKey }}
+              readOnly: true
+            {{- end }}
+            {{- if .Values.cacheStorage.enabled }}
+            - name: cache-storage
+              mountPath: {{ .Values.cacheStorage.path }}
+            {{- end }}
+          resources: {{ toYaml .Values.worker.resources | nindent 12 }}
+      volumes:
+        - name: generated-config
+          secret:
+            secretName: {{ .Values.shared.workerGeneratedConfigSecretName }}
+        {{- if .Values.cacheStorage.enabled }}
+        - name: cache-storage
+          persistentVolumeClaim:
+            claimName: {{ include "stack.fullname" . }}-cache-storage
+        {{- end }}
+        {{- range .Values.worker.config.extraSecrets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}

@@ -1,0 +1,72 @@
+{{- if .Values.gluetun.enabled }}
+{{- if not .Values.gluetun.existingSecret }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.shared.gluetunSecretName }}
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+{{- range $k, $v := .Values.gluetun.secretEnv }}
+  {{ $k }}: {{ $v | quote }}
+{{- end }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stack.fullname" . }}-gluetun
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gluetun
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: gluetun
+  template:
+    metadata:
+      labels:
+        {{- include "stack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: gluetun
+    spec:
+      containers:
+        - name: gluetun
+          image: "{{ .Values.gluetun.image.repository }}:{{ .Values.gluetun.image.tag }}"
+          imagePullPolicy: {{ .Values.gluetun.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          ports:
+            - name: http-proxy
+              containerPort: {{ .Values.gluetun.httpProxyPort }}
+          envFrom:
+            - secretRef:
+                name: {{ default .Values.shared.gluetunSecretName .Values.gluetun.existingSecret }}
+          env:
+          {{- range $k, $v := .Values.gluetun.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+          {{- end }}
+          resources: {{ toYaml .Values.gluetun.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stack.fullname" . }}-gluetun
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "stack.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: gluetun
+  ports:
+    - name: http-proxy
+      port: {{ .Values.gluetun.httpProxyPort }}
+      targetPort: http-proxy
+{{- end }}

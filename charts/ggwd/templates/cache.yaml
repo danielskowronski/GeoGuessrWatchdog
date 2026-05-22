@@ -1,0 +1,113 @@
+{{- if .Values.cacheStorage.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "stack.fullname" . }}-cache-storage
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+spec:
+  accessModes: {{ toYaml .Values.cacheStorage.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.cacheStorage.size }}
+  {{- if .Values.cacheStorage.storageClassName }}
+  storageClassName: {{ .Values.cacheStorage.storageClassName | quote }}
+  {{- end }}
+{{- end }}
+{{- if .Values.cacheBrowser.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stack.fullname" . }}-cache-config
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+data:
+  default.conf: |
+{{ .Values.cacheBrowser.config | indent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stack.fullname" . }}-cache
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: cache
+  template:
+    metadata:
+      labels:
+        {{- include "stack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: cache
+    spec:
+      containers:
+        - name: nginx
+          image: "{{ .Values.cacheBrowser.image.repository }}:{{ .Values.cacheBrowser.image.tag }}"
+          imagePullPolicy: {{ .Values.cacheBrowser.image.pullPolicy }}
+          ports:  
+            - name: http
+              containerPort: {{ .Values.cacheBrowser.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+            - name: shared-rwx
+              mountPath: /srv/ggwd_cache
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "stack.fullname" . }}-cache-config
+        - name: shared-rwx
+          persistentVolumeClaim:
+            claimName: {{ include "stack.fullname" . }}-cache-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stack.fullname" . }}-cache
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "stack.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+  ports:
+    - name: http
+      port: {{ .Values.cacheBrowser.port }}
+      targetPort: http
+{{- if .Values.cacheBrowser.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "stack.fullname" . }}-cache
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.cacheBrowser.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.cacheBrowser.ingress.className | quote }}
+  rules:
+    - host: {{ .Values.cacheBrowser.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "stack.fullname" . }}-cache
+                port:
+                  name: http
+  {{- with .Values.cacheBrowser.ingress.tls }}
+  tls: {{ toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

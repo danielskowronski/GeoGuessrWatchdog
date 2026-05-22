@@ -1,0 +1,181 @@
+---
+nameOverride: ""
+fullnameOverride: ""
+
+imagePullSecrets: []
+
+shared:
+  postgresAdminAuthSecretName: ggwd-postgresql-admin-auth
+  dbUsersSecretName: ggwd-db-users
+  gluetunSecretName: ggwd-gluetun
+  workerGeneratedConfigSecretName: ggwd-worker-generated-config
+  workerUserConfigSecretName: ggwd-worker-user-config
+
+cacheStorage:
+  enabled: true
+  accessModes: ["ReadWriteMany"]
+  size: 1Gi
+  storageClassName: ""
+  path: /srv/ggwd_cache
+
+worker:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/danielskowronski/geoguessrwatchdog
+    tag: ""  # if empty, defaults to chart appVersion
+    pullPolicy: IfNotPresent
+  resources: {}
+  command:
+    - /usr/local/bin/app
+  args:
+    - worker
+  config:
+    # all below optiosn can be overriden with injected configmaps
+    generatedConfigDir: /etc/ggwd
+    generatedConfigFilename: config.yaml
+    shoutrrrTargets: []
+    watchdogs:
+      CompetitiveMaps:
+        enabled: true
+        notifyAbout:
+          - divisionName: "Master I"
+            gameMode: "standardDuels"  # "standardDuels", "noMoveDuels", "nmpzDuels"
+      UserStats:
+        enabled: true
+        observeUsers: []
+    cookie: ""  # if set, added to config, else need to set via user secret or env
+    extraSecrets: []  # after helm generated configmap, all those are added in order to GGWD_CONFIG_PATH
+    #  - name: ggwd-extra-secrets
+    #    items:
+    #      - secretKey: "EXAMPLE_KEY"
+    #        diskPath: /etc/ggwd/extra_secrets/
+  env: {}  # additional env vars, e.g. for proxy configuration
+  #  GGWD_CONFIG_PATH: /etc/ggwd/config.yaml
+
+cacheBrowser:
+  enabled: true
+  image:
+    repository: nginxinc/nginx-unprivileged
+    tag: 1.31-alpine
+    pullPolicy: IfNotPresent
+  port: 8080
+  config: |
+    server {
+      listen 8080;
+      location / {
+        root /srv/ggwd_cache;
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_localtime on;
+
+        default_type application/json;
+        types {
+          application/json json;
+        }
+      }
+    }
+  ingress:
+    enabled: true
+    className: traefik
+    host: ggwd-cache.example.internal
+    annotations: {}
+    tls: []
+
+postgres:
+  host: ggwd-postgresql
+  port: 5432
+  worker:
+    database: ggwd
+    username: ggwd
+    password: ""  # generated and retained if empty
+  temporal:
+    database: temporal
+    visibilityDatabase: temporal_visibility
+    username: temporal
+    password: ""  # generated and retained if empty
+  adminPassword: ""  # generated and retained if empty
+
+postgresql:
+  enabled: true
+  fullnameOverride: ggwd-postgresql
+  auth:
+    existingSecret: ggwd-postgresql-admin-auth
+    secretKeys:
+      adminPasswordKey: postgres-password
+      userPasswordKey: postgres-password
+  primary:
+    initdb:
+      scriptsSecret: ggwd-postgres-initdb
+
+temporal:
+  enabled: true
+  fullnameOverride: ggwd-temporal
+  server:
+    config:
+      namespaces:
+        create: true
+        namespace:
+          - name: ggwd
+            retention: 180d
+      logLevel: info
+      persistence:
+        defaultStore: default
+        visibilityStore: visibility
+        numHistoryShards: 4
+        datastores:
+          default:
+            sql:
+              createDatabase: false
+              manageSchema: true
+              pluginName: postgres12_pgx
+              driverName: postgres12_pgx
+              databaseName: temporal
+              connectAddr: ggwd-postgresql:5432
+              connectProtocol: tcp
+              user: temporal
+              existingSecret: ggwd-db-users
+              secretKey: temporal-password
+          visibility:
+            sql:
+              createDatabase: false
+              manageSchema: true
+              pluginName: postgres12_pgx
+              driverName: postgres12_pgx
+              databaseName: temporal_visibility
+              connectAddr: ggwd-postgresql:5432
+              connectProtocol: tcp
+              user: temporal
+              existingSecret: ggwd-db-users
+              secretKey: temporal-password
+  web:
+    enabled: true
+    ingress:
+      enabled: true
+      className: traefik
+      hosts:
+        - temporal.example.internal
+      annotations: {}
+      tls: []
+
+gluetun:
+  enabled: true
+  image:
+    repository: qmcgaw/gluetun
+    tag: latest
+    pullPolicy: IfNotPresent
+  httpProxyPort: 8888
+  existingSecret: ""  # if set, used instead of chart-created gluetun secret
+  secretEnv:
+    VPN_SERVICE_PROVIDER: ""
+    VPN_TYPE: wireguard
+    WIREGUARD_PRIVATE_KEY: ""
+    SERVER_COUNTRIES: ""
+  env:
+    HTTPPROXY: "on"
+    HTTPPROXY_LISTENING_ADDRESS: ":8888"
+    FIREWALL_INPUT_PORTS: "8888"
+  resources: {}
+
+networkPolicy:
+  enabled: false  # FIXME: broken?
+  temporalNamespaceOnly: false  # FIXME: broken?

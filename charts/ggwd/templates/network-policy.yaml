@@ -1,0 +1,42 @@
+{{- if .Values.networkPolicy.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "stack.fullname" . }}-gluetun-only-worker
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: gluetun
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              stack.network/worker: "true"
+      ports:
+        - protocol: TCP
+          port: {{ .Values.gluetun.httpProxyPort }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "stack.fullname" . }}-temporal-namespace-only
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: temporal
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 7233
+{{- end }}
