@@ -93,7 +93,7 @@ services:
     command:
       - worker
     volumes:
-      - ./config.yaml:/etc/ggwd/config.yaml:ro
+      - ./worker_config.yaml:/etc/ggwd/config.yaml:ro
       - ggwd_cache:/srv/ggwd_cache
   cache:
     image: nginx:alpine

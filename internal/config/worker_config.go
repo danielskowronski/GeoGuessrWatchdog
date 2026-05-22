@@ -1,17 +1,6 @@
 package config
 
-import (
-	"fmt"
-	"strings"
-
-	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/confmap"
-	"github.com/knadh/koanf/providers/env/v2"
-	"github.com/knadh/koanf/providers/file"
-	"github.com/knadh/koanf/v2"
-)
-
-type Config struct {
+type WorkerConfig struct {
 	Database     DatabaseConfig     `koanf:"database"`
 	Temporal     TemporalConfig     `koanf:"temporal"`
 	GeoguessrAPI GeoguessrAPIConfig `koanf:"geoguessrApi"`
@@ -23,10 +12,6 @@ type Config struct {
 type PreflightConfig struct {
 	IpInfoCheckURL     string `koanf:"ipInfoCheckUrl"`
 	IpInfoCheckEnabled bool   `koanf:"ipInfoCheckEnabled"`
-}
-
-type DatabaseConfig struct {
-	URL string `koanf:"url"`
 }
 
 type TemporalConfig struct {
@@ -113,10 +98,8 @@ const (
 	DefaultTemporalOptions_Parallelism                 = 2
 )
 
-func Load(pathsCommaSeparated string) (*Config, error) {
-	k := koanf.New(".")
-
-	if err := k.Load(confmap.Provider(map[string]any{
+func WorkerConfigDefaults() map[string]any {
+	return map[string]any{
 		"temporal.address":   "localhost:7233",
 		"temporal.namespace": "default",
 		"temporal.taskQueue": "ggwd-task-queue",
@@ -155,52 +138,5 @@ func Load(pathsCommaSeparated string) (*Config, error) {
 
 		"preflight.ipInfoCheckUrl":     "https://api.ipify.org?format=json",
 		"preflight.ipInfoCheckEnabled": true,
-	}, "."), nil); err != nil {
-		return nil, err
 	}
-
-	if pathsCommaSeparated != "" {
-		paths := strings.Split(pathsCommaSeparated, ",")
-		for _, path := range paths {
-			path = strings.TrimSpace(path)
-			fmt.Printf("loading config from %s ...\n", path)
-			if path != "" {
-				if err := k.Load(file.Provider(path), yaml.Parser()); err != nil {
-					return nil, err
-				}
-			}
-		}
-	}
-
-	if err := k.Load(env.Provider(".", env.Opt{
-		Prefix: ENV_VAR_PREFIX,
-		TransformFunc: func(key string, value string) (string, any) {
-			key = strings.TrimPrefix(key, ENV_VAR_PREFIX)
-			key = strings.ReplaceAll(key, "_", ".")
-
-			if key == "watchdogs.CompetitiveMaps.notifyAbout" || key == "watchdogs.UserStats.observeUsers" || key == "notifierApi.shoutrrr" {
-				// split by comma for these list values
-				parts := strings.Split(value, ",")
-				values := make([]string, 0, len(parts))
-				for _, part := range parts {
-					part = strings.TrimSpace(part)
-					if part != "" {
-						values = append(values, part)
-					}
-				}
-				return key, values
-			}
-
-			return key, value
-		},
-	}), nil); err != nil {
-		return nil, err
-	}
-
-	var cfg Config
-	if err := k.Unmarshal("", &cfg); err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
 }

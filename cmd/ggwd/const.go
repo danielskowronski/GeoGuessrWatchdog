@@ -15,6 +15,5 @@ const (
 	TEMPORAL_SCHEDULED_TASK_FETCH_USER_STATS_AND_PROGRESS = "fetch-user-stats-and-progress-scheduled"
 	TEMPORAL_WORKFLOW_FETCH_USER_STATS_AND_PROGRESS       = "FetchMuiltipleUsersStatsAndProgressWorkflow"
 
-	CONF_PATH_ENV_VAR = "GGWD_CONFIG_PATH"
 	DEFAULT_CONF_PATH = "/etc/ggwd/config.yaml"
 )

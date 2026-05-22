@@ -20,7 +20,7 @@ const (
 )
 
 type Activities struct {
-	Config config.Config
+	Config config.WorkerConfig
 }
 
 // TODO: split fetch and inserts activities to allow DB operations to be retried independently from API calls, and avoid hitting API rate limits on retries of DB operations

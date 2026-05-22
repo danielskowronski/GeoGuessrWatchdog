@@ -14,7 +14,7 @@ import (
 func EnsureFetchDivisionsMapsSchedule(
 	ctx context.Context,
 	c client.Client,
-	cfg config.Config,
+	cfg config.WorkerConfig,
 ) error {
 	scheduleID := TEMPORAL_SCHEDULE_FETCH_DIVISIONS_MAPS
 
@@ -96,7 +96,7 @@ func EnsureFetchDivisionsMapsSchedule(
 func EnsureFetchUserStatsAndProgressSchedule(
 	ctx context.Context,
 	c client.Client,
-	cfg config.Config,
+	cfg config.WorkerConfig,
 ) error {
 	scheduleID := TEMPORAL_SCHEDULE_FETCH_USER_STATS_AND_PROGRESS
 

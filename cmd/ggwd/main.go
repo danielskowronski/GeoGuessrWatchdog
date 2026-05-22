@@ -13,21 +13,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func getenv(name string, fallback string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		return fallback
-	}
-	return value
-}
-
-func loadConfig() (config.Config, error) {
-	configPath := getenv(CONF_PATH_ENV_VAR, DEFAULT_CONF_PATH)
-	cfg, err := config.Load(configPath)
+func mustLoad() config.WorkerConfig {
+	cfg, err := config.LoadConfig[config.WorkerConfig](DEFAULT_CONF_PATH, config.WorkerConfigDefaults())
 	if err != nil {
-		return config.Config{}, fmt.Errorf("failed to load config: %w", err)
+		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
-	return *cfg, nil
+	return cfg
 }
 
 func main() {
@@ -47,10 +38,7 @@ func main() {
 }
 
 func startWorker() error {
-	cfg, err := loadConfig()
-	if err != nil {
-		panic(fmt.Sprintf("failed to load config: %v", err))
-	}
+	cfg := mustLoad()
 
 	if cfg.Preflight.IpInfoCheckEnabled {
 		// FUTURE: this should be reported with exporters
@@ -73,7 +61,7 @@ func startWorker() error {
 	defer c.Close()
 
 	fmt.Println("ensuring schedules...")
-	err = EnsureFetchDivisionsMapsSchedule(context.Background(), c, cfg)
+	err := EnsureFetchDivisionsMapsSchedule(context.Background(), c, cfg)
 	if err != nil {
 		panic(fmt.Sprintf("failed to ensure schedules: %v", err))
 	}
@@ -110,10 +98,7 @@ func workerCmd() *cobra.Command {
 }
 
 func startWorkflow(Workflow WorkflowEnum) error {
-	cfg, err := loadConfig()
-	if err != nil {
-		panic(fmt.Sprintf("failed to load config: %v", err))
-	}
+	cfg := mustLoad()
 	c := mustTemporalClient(cfg.Temporal)
 	defer c.Close()
 

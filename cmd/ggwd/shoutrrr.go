@@ -7,6 +7,7 @@ import (
 
 	"github.com/containrrr/shoutrrr"
 	"github.com/containrrr/shoutrrr/pkg/types"
+	"github.com/danielskowronski/geoguessrwatchdog/internal/apischema"
 )
 
 const (
@@ -108,7 +109,8 @@ func NiceDivisionModeString(divisionName string, gameMode string) string {
 }
 func formatMapUrl(mapID string, mapName string) string {
 	// uses const URL prefix which will probably never change
-	return fmt.Sprintf("[%s](https://www.geoguessr.com/maps/%s)", mapName, mapID)
+	mapUrl := fmt.Sprintf(apischema.MAP_FRONTEND_URL, mapID)
+	return fmt.Sprintf("[%s](%s)", mapName, mapUrl)
 }
 
 func SendMapChangeNotification(ctx context.Context, urls []string, divisionMode DivisionModeMapDetails, delta DivisionMapDelta) error {

@@ -1,0 +1,7 @@
+---
+database:
+  url: postgres://app:app@postgres-app:5432/app?sslmode=disable
+server:
+  bind: ":8090"
+userAliases:
+  "61edaa9efa85ad00017053a9": "Blinky"

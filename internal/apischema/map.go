@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+const (
+	MAP_FRONTEND_URL = "https://www.geoguessr.com/maps/%s"
+)
+
 // https://www.geoguessr.com/api/maps/$MAP_ID
 type MapApiResponse struct {
 	ID               string               `json:"id"`
