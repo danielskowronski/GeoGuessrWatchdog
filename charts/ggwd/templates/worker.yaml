@@ -36,6 +36,7 @@ stringData:
     watchdogs:
       CompetitiveMaps:
         enabled: {{ .Values.worker.config.watchdogs.CompetitiveMaps.enabled }}
+        scheduleFrequencyHours: {{ .Values.worker.config.watchdogs.CompetitiveMaps.scheduleFrequencyHours }}
         {{- if .Values.worker.config.watchdogs.CompetitiveMaps.notifyAbout }}
         notifyAbout:
         {{- range .Values.worker.config.watchdogs.CompetitiveMaps.notifyAbout }}
@@ -45,6 +46,9 @@ stringData:
         {{- end }}
       UserStats:
         enabled: {{ .Values.worker.config.watchdogs.UserStats.enabled }}
+        scheduleDaily:
+          hour: {{ .Values.worker.config.watchdogs.UserStats.scheduleDaily.hour }}
+          minute: {{ .Values.worker.config.watchdogs.UserStats.scheduleDaily.minute }}
         {{- if .Values.worker.config.watchdogs.UserStats.observeUsers }}
         observeUsers:
         {{- range .Values.worker.config.watchdogs.UserStats.observeUsers }}

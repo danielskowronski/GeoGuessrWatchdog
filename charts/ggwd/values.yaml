@@ -37,11 +37,15 @@ worker:
     watchdogs:
       CompetitiveMaps:
         enabled: true
+        scheduleFrequencyHours: 6  # first daily is 00:00 UTC
         notifyAbout:
           - divisionName: "Master I"
             gameMode: "standardDuels"  # "standardDuels", "noMoveDuels", "nmpzDuels"
       UserStats:
         enabled: true
+        scheduleDaily:  # time in UTC
+          hour: 4
+          minute: 0
         observeUsers: []
     cookie: ""  # if set, added to config, else need to set via user secret or env
     extraSecrets: []  # after helm generated configmap, all those are added in order to GGWD_CONFIG_PATH
@@ -82,6 +86,7 @@ cacheBrowser:
     tls: []
 
 postgres:
+  # TODO: add some backup job to run pgdump
   host: ggwd-postgresql
   port: 5432
   worker:
@@ -108,6 +113,8 @@ postgresql:
       scriptsSecret: ggwd-postgres-initdb
 
 temporal:
+  # TODO: add some healthcheck
+  # TODO: add prometheus exporters
   enabled: true
   fullnameOverride: ggwd-temporal
   server:
@@ -158,6 +165,7 @@ temporal:
       tls: []
 
 gluetun:
+  # TODO: add some healthcheck
   enabled: true
   image:
     repository: qmcgaw/gluetun
