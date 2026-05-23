@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"html/template"
+	"io/fs"
 	"net/http"
 	"strings"
 
@@ -19,6 +22,9 @@ const (
 	DEFAULT_CONF_PATH = "/etc/ggwd-api/config.yaml"
 )
 
+//go:embed web/html/*.html web/static/*.css web/static/*.js web/static/pages/*.js
+var webFS embed.FS
+
 type App struct {
 	db          *pgxpool.Pool
 	userAliases config.UserAliasesConfig
@@ -28,6 +34,12 @@ type HealthOutput struct {
 	Body struct {
 		Status string `json:"status"`
 	}
+}
+
+type PageData struct {
+	Title   string
+	Heading string
+	ID      string
 }
 
 func mustLoad() config.ApiConfig {
@@ -51,6 +63,76 @@ func linkToDocs(bind string) string {
 	return fmt.Sprintf("http://localhost%s/docs", bind)
 }
 
+func renderPage(w http.ResponseWriter, page string, data PageData) {
+	tpl, err := template.ParseFS(
+		webFS,
+		"web/html/layout.html",
+		"web/html/"+page+".html",
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err := tpl.ExecuteTemplate(w, "layout", data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func registerWebRoutes(r chi.Router) {
+	staticFS, err := fs.Sub(webFS, "web/static")
+	if err != nil {
+		panic(err)
+	}
+
+	r.Handle("/static/*",
+		http.StripPrefix("/static/",
+			http.FileServer(http.FS(staticFS)),
+		),
+	)
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/divisions", http.StatusFound)
+	})
+
+	r.Get("/divisions", func(w http.ResponseWriter, r *http.Request) {
+		renderPage(w, "divisions", PageData{
+			Title:   "GGWD Divisions",
+			Heading: "Divisions",
+		})
+	})
+
+	r.Get("/users", func(w http.ResponseWriter, r *http.Request) {
+		renderPage(w, "users", PageData{
+			Title:   "GGWD Users",
+			Heading: "Users",
+		})
+	})
+
+	r.Get("/map/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+
+		renderPage(w, "map", PageData{
+			Title:   "GGWD Map",
+			Heading: "Map: " + id,
+			ID:      id,
+		})
+	})
+
+	r.Get("/user/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+
+		renderPage(w, "user", PageData{
+			Title:   "GGWD User",
+			Heading: "User: " + id,
+			ID:      id,
+		})
+	})
+}
+
 func main() {
 	cfg := mustLoad()
 
@@ -59,12 +141,16 @@ func main() {
 		panic(fmt.Sprintf("failed to connect to database: %v", err))
 	}
 	defer dbPool.Close()
+
 	app := &App{
 		userAliases: cfg.UserAliases,
 		db:          dbPool,
 	}
 
 	r := chi.NewRouter()
+
+	registerWebRoutes(r)
+
 	api := humachi.New(r, huma.DefaultConfig("GGWD API", API_VER))
 
 	huma.Get(api, "/health", func(ctx context.Context, input *struct{}) (*HealthOutput, error) {
@@ -73,15 +159,15 @@ func main() {
 		return resp, nil
 	})
 
-	huma.Get(api, "/divisions", app.GetDivisions)
-
-	// TODO: /maps
-	huma.Get(api, "/map/{id}", app.GetMapHistory)
-
-	huma.Get(api, "/users", app.GetUsers)
-	huma.Get(api, "/user/{id}", app.GetUserStats)
+	huma.Get(api, "/api/divisions", app.GetDivisions)
+	huma.Get(api, "/api/users", app.GetUsers)
+	huma.Get(api, "/api/user/{id}", app.GetUserStats)
+	huma.Get(api, "/api/map/{id}", app.GetMapHistory)
 
 	fmt.Printf("Starting server at %s\n", cfg.Server.Bind)
 	fmt.Printf("API documentation available at %s\n", linkToDocs(cfg.Server.Bind))
-	http.ListenAndServe(cfg.Server.Bind, r)
+
+	if err := http.ListenAndServe(cfg.Server.Bind, r); err != nil {
+		panic(err)
+	}
 }

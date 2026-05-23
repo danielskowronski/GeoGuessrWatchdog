@@ -20,13 +20,6 @@ type DatabaseConfig struct {
 	URL string `koanf:"url"`
 }
 
-func getenv(name string, fallback string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		return fallback
-	}
-	return value
-}
 func LoadConfig[T any](defaultPath string, defaults map[string]any) (T, error) {
 	configPath := os.Getenv(CONF_PATH_ENV_VAR)
 

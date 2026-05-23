@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielskowronski/geoguessrwatchdog/internal/apischema"
@@ -11,14 +12,20 @@ import (
 )
 
 type MapHistoryInput struct {
-	ID string `query:"id" doc:"Map ID"`
+	ID string `path:"id" doc:"Map ID"`
 }
+
+type MapHistoryEntry struct {
+	Timestamp time.Time         `json:"timestamp"`
+	Info      apischema.MapInfo `json:"info"`
+}
+
 type MapHistoryOutput struct {
 	Body struct {
-		Name        string                `json:"name"`
-		Description string                `json:"description"`
-		URL         string                `json:"url"`
-		Entries     []db.GetMapHistoryRow `json:"entries"`
+		Name        string            `json:"name"`
+		Description string            `json:"description"`
+		URL         string            `json:"url"`
+		Entries     []MapHistoryEntry `json:"entries"`
 	}
 }
 
@@ -44,6 +51,21 @@ func (a *App) GetMapHistory(ctx context.Context, input *MapHistoryInput) (*MapHi
 		return nil, huma.Error500InternalServerError("failed to get map history")
 	}
 
-	resp.Body.Entries = history
+	resp.Body.Entries = make([]MapHistoryEntry, len(history))
+	for i := range history {
+		resp.Body.Entries[i] = MapHistoryEntry{
+			Timestamp: unwrapTimestamptzDefault(history[i].Timestamp),
+			Info: apischema.MapInfo{
+				ID:               info.ApiID,
+				BoundsMinLat:     unwrapFloat8Default(history[i].BoundsMinLat),
+				BoundsMinLng:     unwrapFloat8Default(history[i].BoundsMinLon),
+				BoundsMaxLat:     unwrapFloat8Default(history[i].BoundsMaxLat),
+				BoundsMaxLng:     unwrapFloat8Default(history[i].BoundsMaxLon),
+				MaxErrorDistance: unwrapInt8Default(history[i].MaxErrDistance),
+				UpdatedAt:        unwrapTimestamptzDefault(history[i].ApiUpdated),
+				CoordinateCount:  history[i].LocationCount,
+			},
+		}
+	}
 	return resp, nil
 }

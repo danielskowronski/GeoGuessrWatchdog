@@ -1,0 +1,26 @@
+{{ define "content" }}
+<section class="card">
+  <p id="map-description"></p>
+  <p><a id="map-url" href="#" target="_blank" rel="noreferrer"></a></p>
+
+  <div class="toolbar">
+    <button id="reload">Reload</button>
+    <button data-toggle-column="boundsMin,boundsMax">
+      Toggle exact bounds
+    </button>
+    <button data-toggle-column="maxErrorDistance">
+      Toggle max error distance
+    </button>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="map-history-table"></div>
+</section>
+{{ end }} {{ define "scripts" }}
+<script>
+  window.GGWD_PAGE = {
+    id: {{ .ID }}
+  };
+</script>
+<script type="module" src="/static/pages/map.js"></script>
+{{ end }}
