@@ -98,7 +98,7 @@ async function load() {
       paginationSize: 50,
 
       initialSort: [
-        { column: "timestamp", dir: "desc" },
+        { column: "timestamp", dir: "asc" },
       ],
 
       columns: [

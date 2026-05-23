@@ -90,11 +90,34 @@ services:
     env_file:
       - postgres_app.env
       - ggwd.env
+    entrypoint: ["/usr/local/bin/ggwd-worker"]
     command:
       - worker
     volumes:
       - ./worker_config.yaml:/etc/ggwd/config.yaml:ro
       - ggwd_cache:/srv/ggwd_cache
+  api:
+    networks:
+      - appnet
+    build: ../
+    depends_on:
+      temporal:
+        condition: service_started #service_healthy
+      postgres-app:
+        condition: service_started #service_healthy
+      gluetun:
+        condition: service_healthy
+    environment:
+      - GGWD_CONFIG_PATH=/etc/ggwdapi/config.yaml
+    env_file:
+      - postgres_app.env
+    entrypoint: ["/usr/local/bin/ggwd-api"]
+    command: []
+    volumes:
+      - ./api_config.yaml:/etc/ggwdapi/config.yaml:ro
+      - ggwd_cache:/srv/ggwd_cache
+    ports:
+      - "8099:8090"
   cache:
     image: nginx:alpine
     ports:

@@ -10,6 +10,7 @@ shared:
   gluetunSecretName: ggwd-gluetun
   workerGeneratedConfigSecretName: ggwd-worker-generated-config
   workerUserConfigSecretName: ggwd-worker-user-config
+  apiGeneratedConfigSecretName: ggwd-api-generated-config
 
 cacheStorage:
   enabled: true
@@ -26,7 +27,7 @@ worker:
     pullPolicy: IfNotPresent
   resources: {}
   command:
-    - /usr/local/bin/app
+    - /usr/local/bin/ggwd-worker
   args:
     - worker
   config:
@@ -55,6 +56,33 @@ worker:
     #        diskPath: /etc/ggwd/extra_secrets/
   env: {}  # additional env vars, e.g. for proxy configuration
   #  GGWD_CONFIG_PATH: /etc/ggwd/config.yaml
+
+api:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: ghcr.io/danielskowronski/geoguessrwatchdog
+    tag: ""  # if empty, defaults to chart appVersion
+    pullPolicy: IfNotPresent
+  resources: {}
+  command:
+    - /usr/local/bin/ggwd-api
+  args: []
+  env: {}  # additional env vars
+  #  GGWD_CONFIG_PATH: /etc/ggwdapi/config.yaml
+  config:
+    # all below optiosn can be overriden with injected configmaps
+    generatedConfigDir: /etc/ggwdapi
+    generatedConfigFilename: config.yaml
+    userAliases:
+      "61edaa9efa85ad00017053a9": "Blinky"
+  port: 8090
+  ingress:
+    enabled: true
+    className: traefik
+    host: ggwd.example.internal
+    annotations: {}
+    tls: []
 
 cacheBrowser:
   enabled: true

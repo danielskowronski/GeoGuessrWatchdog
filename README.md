@@ -36,6 +36,8 @@ Endpoints:
 - [Temporal](http://localhost:8080/)
 - [cache](http://localhost:10001/)
 - [DB](postgres://app:app@localhost:5432/app)
+- [API](http://localhost:8099/docs)
+- [Frontend](http://localhost:8099/)
 
 ### Build and push image
 
