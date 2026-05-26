@@ -1,0 +1,9 @@
+---
+database:
+  url: postgres://app:app@localhost:5432/app?sslmode=disable
+server:
+  bind: ":8090"
+  serveLocally: true
+  localServePath: ./web
+userAliases:
+  "61edaa9efa85ad00017053a9": "Blinky"

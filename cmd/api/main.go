@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -22,8 +23,8 @@ const (
 	DEFAULT_CONF_PATH = "/etc/ggwd-api/config.yaml"
 )
 
-//go:embed web/html/*.html web/static/*.css web/static/*.js web/static/pages/*.js
-var webFS embed.FS
+//go:embed web/html/*.html web/static/style/*.css web/static/*.js web/static/pages/*.js
+var embeddedWebFS embed.FS
 
 type App struct {
 	db          *pgxpool.Pool
@@ -63,11 +64,35 @@ func linkToDocs(bind string) string {
 	return fmt.Sprintf("http://localhost%s/docs", bind)
 }
 
-func renderPage(w http.ResponseWriter, page string, data PageData) {
+func getWebFS(serverCfg config.ApiServerConfig) fs.FS {
+	if serverCfg.ServeLocally {
+		localPath := serverCfg.LocalServePath
+		if localPath == "" {
+			localPath = "web"
+		}
+
+		if _, err := os.Stat(localPath); err != nil {
+			panic(fmt.Sprintf("failed to access local web path %q: %v", localPath, err))
+		}
+
+		fmt.Printf("Serving web files from local path: %s\n", localPath)
+		return os.DirFS(localPath)
+	}
+
+	webRoot, err := fs.Sub(embeddedWebFS, "web")
+	if err != nil {
+		panic(fmt.Sprintf("failed to create embedded web filesystem: %v", err))
+	}
+
+	fmt.Println("Serving web files from embedded filesystem")
+	return webRoot
+}
+
+func renderPage(webRoot fs.FS, w http.ResponseWriter, page string, data PageData) {
 	tpl, err := template.ParseFS(
-		webFS,
-		"web/html/layout.html",
-		"web/html/"+page+".html",
+		webRoot,
+		"html/layout.html",
+		"html/"+page+".html",
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -82,10 +107,10 @@ func renderPage(w http.ResponseWriter, page string, data PageData) {
 	}
 }
 
-func registerWebRoutes(r chi.Router) {
-	staticFS, err := fs.Sub(webFS, "web/static")
+func registerWebRoutes(r chi.Router, webRoot fs.FS) {
+	staticFS, err := fs.Sub(webRoot, "static")
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("failed to create static filesystem: %v", err))
 	}
 
 	r.Handle("/static/*",
@@ -99,14 +124,14 @@ func registerWebRoutes(r chi.Router) {
 	})
 
 	r.Get("/divisions", func(w http.ResponseWriter, r *http.Request) {
-		renderPage(w, "divisions", PageData{
+		renderPage(webRoot, w, "divisions", PageData{
 			Title:   "GGWD Divisions",
 			Heading: "Divisions",
 		})
 	})
 
 	r.Get("/users", func(w http.ResponseWriter, r *http.Request) {
-		renderPage(w, "users", PageData{
+		renderPage(webRoot, w, "users", PageData{
 			Title:   "GGWD Users",
 			Heading: "Users",
 		})
@@ -115,7 +140,7 @@ func registerWebRoutes(r chi.Router) {
 	r.Get("/map/{id}", func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 
-		renderPage(w, "map", PageData{
+		renderPage(webRoot, w, "map", PageData{
 			Title:   "GGWD Map",
 			Heading: "Map: " + id,
 			ID:      id,
@@ -125,7 +150,7 @@ func registerWebRoutes(r chi.Router) {
 	r.Get("/user/{id}", func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 
-		renderPage(w, "user", PageData{
+		renderPage(webRoot, w, "user", PageData{
 			Title:   "GGWD User",
 			Heading: "User: " + id,
 			ID:      id,
@@ -135,6 +160,7 @@ func registerWebRoutes(r chi.Router) {
 
 func main() {
 	cfg := mustLoad()
+	fmt.Println(cfg.Server.LocalServePath)
 
 	dbPool, err := pgxpool.New(context.Background(), cfg.Database.URL)
 	if err != nil {
@@ -149,7 +175,8 @@ func main() {
 
 	r := chi.NewRouter()
 
-	registerWebRoutes(r)
+	webRoot := getWebFS(cfg.Server)
+	registerWebRoutes(r, webRoot)
 
 	api := humachi.New(r, huma.DefaultConfig("GGWD API", API_VER))
 

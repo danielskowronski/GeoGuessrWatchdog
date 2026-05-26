@@ -1,0 +1,48 @@
+/* game mode selector table */
+#userModesTable {
+  border-collapse: collapse;
+}
+#userModesTable th,
+tr,
+td {
+  border: 1px solid #d8dee4;
+}
+#userModesTable td,
+#userModesTable th {
+  padding: 4px;
+  width: 80px;
+}
+#userModesTable th.mode-header {
+  text-align: right;
+}
+#userModesTable th.type-header,
+#userModesTable td {
+  text-align: center;
+}
+
+/* user history table - internal borders */
+
+#user-history-table [tabulator-field="guessedFirst"],
+#user-history-table [tabulator-field="fetchWeekday"],
+#user-history-table [tabulator-field="rankedSoloMovingGamesDaily"],
+#user-history-table [tabulator-field="rankedSoloNomoveGamesDaily"],
+#user-history-table [tabulator-field="rankedSoloMmpzGamesDaily"],
+#user-history-table [tabulator-field="rankedTeamMovingGamesDaily"],
+#user-history-table [tabulator-field="rankedTeamNomoveGamesDaily"],
+#user-history-table [tabulator-field="rankedTeamMmpzGamesDaily"],
+#user-history-table [tabulator-field="unrankedSoloMovingGamesDaily"],
+#user-history-table [tabulator-field="unrankedSoloNomoveGamesDaily"],
+#user-history-table [tabulator-field="unrankedSoloMmpzGamesDaily"] {
+  border-right: none;
+  box-shadow: inset -2px 0 0 #362565;
+}
+
+#user-history-table .fetch-sunday {
+  box-shadow: inset 0 -2px 0 #362565 !important;
+}
+
+/* user history table - formatting of specific columns */
+#user-history-table .tabulator-cell[tabulator-field="bestCountries"],
+#user-history-table .tabulator-cell[tabulator-field="worstCountries"] {
+  text-align: center;
+}

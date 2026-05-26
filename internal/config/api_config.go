@@ -7,13 +7,17 @@ type ApiConfig struct {
 }
 
 type ApiServerConfig struct {
-	Bind string `koanf:"bind"`
+	Bind           string `koanf:"bind"`
+	ServeLocally   bool   `koanf:"serveLocally"`
+	LocalServePath string `koanf:"localServePath"`
 }
 
 type UserAliasesConfig map[string]string
 
 func ApiConfigDefaults() map[string]any {
 	return map[string]any{
-		"server.bind": ":8090",
+		"server.bind":           ":8090",
+		"server.serveLocally":   false,
+		"server.localServePath": "./web",
 	}
 }

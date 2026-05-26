@@ -64,6 +64,55 @@ function dailyRatioFormatter({ winsDeltaField = "", gamesDeltaField = "", digits
     return (ratio * 100).toFixed(digits).padStart(padDigits, " ") + "%";
   };
 }
+function countryFlagEmoji(code) {
+  code = String(code ?? "").trim().toUpperCase();
+
+  if (!/^[A-Z]{2}$/.test(code)) return "❔";
+
+  return code.replace(/./g, char =>
+    String.fromCodePoint(127397 + char.charCodeAt(0))
+  );
+}
+
+const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+function countryTitle(code) {
+  const upperCode = String(code ?? "").trim().toUpperCase();
+  const countryName = regionNames.of(upperCode);
+  return countryName ? `${upperCode} - ${countryName}` : upperCode;
+}
+function countryFlagEmojiWrapped(code) {
+  const title = countryTitle(code);
+  const emoji = countryFlagEmoji(code);
+
+  return `<span>${emoji}</span>`;
+}
+function countryCodesList(cell) {
+  const v = String(cell.getValue() ?? "");
+  if (!v) return "";
+
+  const codes = v
+    .replace(/[\[\]",']/g, " ")
+    .split(/\s+/)
+    .map(s => s.trim().toUpperCase())
+    .filter(s => /^[A-Z]{2}$/.test(s));
+
+  return codes;
+
+}
+function countryListTooltipFormatter(e, cell) {
+  const codes = countryCodesList(cell);
+  var body = "";
+  for (var i = 0; i < codes.length; i++) {
+    body += "#" + (i + 1) + " " + countryTitle(codes[i]) + "<br />";
+  }
+  return body;
+}
+
+function countryListFormatter(cell) {
+  const codes = countryCodesList(cell);
+
+  return codes.map(countryFlagEmojiWrapped).join(" ");
+}
 
 async function load() {
   const userId = window.GGWD_PAGE?.id || "";
@@ -80,7 +129,12 @@ async function load() {
       paginationSize: 50,
       initialSort: [{ column: "fetchTimestamp", dir: "asc" }],
       columns: [
-        { title: "Fetch ID", field: "fetchID", sorter: "number", visible: false },
+        {
+          title: "Fetch ID",
+          field: "fetchID",
+          sorter: "number",
+          visible: false
+        },
         {
           title: "Fetch<br />Date",
           field: "fetchTimestamp",
@@ -154,6 +208,25 @@ async function load() {
           visible: false,
         },
         {
+          title: "Countries<br />Best",
+          field: "bestCountries",
+          headerSort: false,
+          formatter: countryListFormatter,
+          visible: false,
+          cssClass: "wrap-cell",
+          tooltip: countryListTooltipFormatter,
+
+        },
+        {
+          title: "Countries<br />Worst",
+          field: "worstCountries",
+          headerSort: false,
+          formatter: countryListFormatter,
+          visible: false,
+          cssClass: "wrap-cell",
+          tooltip: countryListTooltipFormatter,
+        },
+        {
           title: "Guessed<br />First",
           field: "guessedFirst",
           sorter: "number",
@@ -167,6 +240,7 @@ async function load() {
             fillSpaces: 5,
           }),
         },
+
 
         {
           title: "# Games<br />Ranked<br />Moving",
@@ -464,14 +538,18 @@ async function load() {
           visible: false,
         },
 
-
-        { title: "Countries<br />Best", field: "bestCountries", sorter: "string", visible: false, cssClass: "wrap-cell" },
-        { title: "Countries<br />Worst", field: "worstCountries", sorter: "string", visible: false, cssClass: "wrap-cell" },
       ],
+      rowFormatter: function (row) {
+        const data = row.getData();
+        const el = row.getElement();
+        if (data.fetchWeekday == 1) {
+          el.classList.add("fetch-sunday");
+        }
+      }
     });
 
     wireToggleButtons(table);
-    setTimeout(() => initTable(table), 1); 
+    setTimeout(() => initTable(table), 1);
   } else {
     table.replaceData(rows);
   }

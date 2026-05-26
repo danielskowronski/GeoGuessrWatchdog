@@ -1,4 +1,5 @@
 {{ define "content" }}
+<link rel="stylesheet" href="/static/style/user.css" />
 <script>
   function toggleSelectorTable() {
     const container = document.getElementById("userModesTableContainer");
@@ -14,9 +15,14 @@
     <button id="reload">Reload</button>
     <button data-toggle-column="fetchID">Toggle fetch ID</button>
     <button data-toggle-column="divisionName">Toggle division</button>
-    <button onClick="toggleSelectorTable()">Toggle game mode selector table</button>
+    <button data-toggle-column="worstCountries,bestCountries">
+      Toggle countries
+    </button>
+    <button onClick="toggleSelectorTable()">
+      Toggle game mode selector table
+    </button>
   </div>
-  <div id="userModesTableContainer" style="display: none;">
+  <div id="userModesTableContainer" style="display: none">
     <br />
     <table id="userModesTable">
       <tr>
@@ -28,24 +34,96 @@
       </tr>
       <tr>
         <th class="mode-header">Moving</th>
-        <td><input type="checkbox" data-select-group="rating" data-select-type="Moving" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="rankedSoloMoving" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="rankedTeamMoving" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="unrankedSoloMoving" /></td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="rating"
+            data-select-type="Moving"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="rankedSoloMoving"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="rankedTeamMoving"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="unrankedSoloMoving"
+          />
+        </td>
       </tr>
       <tr>
         <th class="mode-header">No Move</th>
-        <td><input type="checkbox" data-select-group="rating" data-select-type="Nomove" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="rankedSoloNomove" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="rankedTeamNomove" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="unrankedSoloNomove" /></td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="rating"
+            data-select-type="Nomove"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="rankedSoloNomove"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="rankedTeamNomove"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="unrankedSoloNomove"
+          />
+        </td>
       </tr>
       <tr>
         <th class="mode-header">NMPZ</th>
-        <td><input type="checkbox" data-select-group="rating" data-select-type="Nmpz" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="rankedSoloNmpz" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="rankedTeamNmpz" /></td>
-        <td><input type="checkbox" data-select-group="gamesAndWins" data-select-type="unrankedSoloNmpz" /></td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="rating"
+            data-select-type="Nmpz"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="rankedSoloNmpz"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="rankedTeamNmpz"
+          />
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            data-select-group="gamesAndWins"
+            data-select-type="unrankedSoloNmpz"
+          />
+        </td>
       </tr>
     </table>
     <br />
