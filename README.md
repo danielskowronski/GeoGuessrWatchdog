@@ -54,3 +54,14 @@ make build-and-push
 # quick build
 make build-and-push PLATFORM=linux/arm64 TAG=stage
 ```
+
+### Local CI
+
+```bash
+# bump VERSION file
+# implement changes
+make release-prepare
+# commit to git
+make release-finish
+cd charts; helm -n app-ggwd upgrade --install ggwd ggwd --values values.yaml --set 'temporal.enabled=true'; cd -
+```

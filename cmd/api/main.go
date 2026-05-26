@@ -14,6 +14,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
 
+	"github.com/danielskowronski/geoguessrwatchdog/internal/buildinfo"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -190,6 +191,8 @@ func main() {
 	huma.Get(api, "/api/users", app.GetUsers)
 	huma.Get(api, "/api/user/{id}", app.GetUserStats)
 	huma.Get(api, "/api/map/{id}", app.GetMapHistory)
+
+	fmt.Println(buildinfo.GetBuildInfo())
 
 	fmt.Printf("Starting server at %s\n", cfg.Server.Bind)
 	fmt.Printf("API documentation available at %s\n", linkToDocs(cfg.Server.Bind))

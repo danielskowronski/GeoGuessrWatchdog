@@ -9,6 +9,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
+	"github.com/danielskowronski/geoguessrwatchdog/internal/buildinfo"
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,8 @@ func mustLoad() config.WorkerConfig {
 }
 
 func main() {
+	fmt.Println(buildinfo.GetBuildInfo())
+
 	rootCmd := &cobra.Command{
 		Use:   "ggwd",
 		Short: "GeoGuessrWatchdog - Temporal worker and CLI for GeoGuessr ranked stats monitoring",
