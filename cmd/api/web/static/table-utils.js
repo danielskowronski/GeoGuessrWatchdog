@@ -195,7 +195,7 @@ export function numberText(value, options = {}) {
   }
   const v = Number(value) * multiplier;
   const body = digits > 0 ? v.toFixed(digits) : String(Math.round(v));
-  return `${body.padStart(fillSpaces, "0")}${suffix}`;
+  return `${body.padStart(fillSpaces, " ")}${suffix}`;
 }
 
 export function deltaText(value, options = {}) {
@@ -205,6 +205,7 @@ export function deltaText(value, options = {}) {
     suffix = "",
     showZero = false,
     empty = "",
+    intDigits = 2,
   } = options;
 
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
@@ -220,7 +221,7 @@ export function deltaText(value, options = {}) {
   const body = digits > 0 ? v.toFixed(digits) : String(Math.round(v));
   const sign = v > 0 ? "+" : "";
 
-  return `${sign}${body}${suffix}`;
+  return (`${sign}${body}${suffix}`).padStart(1 + digits + suffix.length + intDigits, " ");
 }
 
 export function deltaClass(value) {

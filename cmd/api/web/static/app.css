@@ -82,4 +82,22 @@ input {
 
 .tabulator-cell {
   font-family: "Ubuntu Mono", monospace;
+  white-space: pre !important;
+}
+
+#userModesTable {
+  border-collapse: collapse;
+}
+#userModesTable th, tr, td {
+  border: 1px solid #d8dee4;
+}
+#userModesTable td, #userModesTable th {
+  padding: 4px;
+  width: 80px;
+}
+#userModesTable th.mode-header {
+  text-align: right;
+}
+#userModesTable th.type-header, #userModesTable td {
+  text-align: center;
 }

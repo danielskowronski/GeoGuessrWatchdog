@@ -38,6 +38,33 @@ function prepareRows(rows) {
   // TODO: add daily win ratios
 }
 
+function dailyRatioFormatter({ winsDeltaField = "", gamesDeltaField = "", digits = 0 } = {}) {
+  return function (cell) {
+    const row = cell.getRow().getData();
+    const el = cell.getElement();
+
+    el.classList.remove("delta-positive", "delta-negative", "delta-zero");
+
+    const wins = Number(row[winsDeltaField]);
+    const games = Number(row[gamesDeltaField]);
+
+    if (!Number.isFinite(wins) || !Number.isFinite(games) || games === 0) {
+      return "";
+    }
+
+    const ratio = wins / games;
+
+    if (ratio >= 0.5) {
+      el.classList.add("delta-positive");
+    } else {
+      el.classList.add("delta-negative");
+    }
+
+    const padDigits = digits > 0 ? digits + 4 : 3; // 4 for "100.0", 3 for "100"
+    return (ratio * 100).toFixed(digits).padStart(padDigits, " ") + "%";
+  };
+}
+
 async function load() {
   const userId = window.GGWD_PAGE?.id || "";
   setStatus(`Loading user ${userId}...`);
@@ -100,6 +127,7 @@ async function load() {
             deltaDigits: 0,
             fillSpaces: 4
           }),
+          visible: false,
         },
         {
           title: "ELO<br />No Move",
@@ -111,6 +139,7 @@ async function load() {
             deltaDigits: 0,
             fillSpaces: 4
           }),
+          visible: false,
         },
         {
           title: "ELO<br />NMPZ",
@@ -122,6 +151,7 @@ async function load() {
             deltaDigits: 0,
             fillSpaces: 4
           }),
+          visible: false,
         },
         {
           title: "Guessed<br />First",
@@ -147,6 +177,7 @@ async function load() {
             valueDigits: 0,
             deltaDigits: 0,
           }),
+          visible: false,
         },
         {
           title: "# Wins<br />Ranked<br />Moving",
@@ -157,6 +188,17 @@ async function load() {
             valueDigits: 0,
             deltaDigits: 0,
           }),
+          visible: false,
+        },
+        {
+          title: "Ratio<br />Ranked<br />Moving",
+          field: "rankedSoloMovingGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "rankedSoloMovingWinsDelta",
+            gamesDeltaField: "rankedSoloMovingGamesDelta",
+          }),
+          visible: false,
         },
         {
           title: "# Games<br />Ranked<br />No Move",
@@ -167,6 +209,7 @@ async function load() {
             valueDigits: 0,
             deltaDigits: 0,
           }),
+          visible: false,
         },
         {
           title: "# Wins<br />Ranked<br />No Move",
@@ -177,7 +220,19 @@ async function load() {
             valueDigits: 0,
             deltaDigits: 0,
           }),
+          visible: false,
         },
+        {
+          title: "Ratio<br />Ranked<br />No Move",
+          field: "rankedSoloNomoveGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "rankedSoloNomoveWinsDelta",
+            gamesDeltaField: "rankedSoloNomoveGamesDelta",
+          }),
+          visible: false,
+        },
+
         {
           title: "# Games<br />Ranked<br />NMPZ",
           field: "rankedSoloNmpzGames",
@@ -187,6 +242,7 @@ async function load() {
             valueDigits: 0,
             deltaDigits: 0,
           }),
+          visible: false,
         },
         {
           title: "# Wins<br />Ranked<br />NMPZ",
@@ -197,6 +253,17 @@ async function load() {
             valueDigits: 0,
             deltaDigits: 0,
           }),
+          visible: false,
+        },
+        {
+          title: "Ratio<br />Ranked<br />NMPZ",
+          field: "rankedSoloNmpzGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "rankedSoloNmpzWinsDelta",
+            gamesDeltaField: "rankedSoloNmpzGamesDelta",
+          }),
+          visible: false,
         },
 
         {
@@ -222,6 +289,17 @@ async function load() {
           visible: false,
         },
         {
+          title: "Ratio<br />Team<br />Moving",
+          field: "rankedTeamMovingGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "rankedTeamMovingWinsDelta",
+            gamesDeltaField: "rankedTeamMovingGamesDelta",
+          }),
+          visible: false,
+        },
+
+        {
           title: "# Games<br />Team<br />No Move",
           field: "rankedTeamNomoveGames",
           sorter: "number",
@@ -243,6 +321,17 @@ async function load() {
           }),
           visible: false,
         },
+        {
+          title: "Ratio<br />Team<br />No Move",
+          field: "rankedTeamNomoveGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "rankedTeamNomoveWinsDelta",
+            gamesDeltaField: "rankedTeamNomoveGamesDelta",
+          }),
+          visible: false,
+        },
+
         {
           title: "# Games<br />Team<br />NMPZ",
           field: "rankedTeamNmpzGames",
@@ -266,6 +355,17 @@ async function load() {
           visible: false,
         },
         {
+          title: "Ratio<br />Team<br />NMPZ",
+          field: "rankedTeamNmpzGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "rankedTeamNmpzWinsDelta",
+            gamesDeltaField: "rankedTeamNmpzGamesDelta",
+          }),
+          visible: false,
+        },
+
+        {
           title: "# Games<br />Unranked<br />Moving",
           field: "unrankedSoloMovingGames",
           sorter: "number",
@@ -287,6 +387,17 @@ async function load() {
           }),
           visible: false,
         },
+        {
+          title: "Ratio<br />Unranked<br />Moving",
+          field: "unrankedSoloMovingGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "unrankedSoloMovingWinsDelta",
+            gamesDeltaField: "unrankedSoloMovingGamesDelta",
+          }),
+          visible: false,
+        },
+
         {
           title: "# Games<br />Unranked<br />No Move",
           field: "unrankedSoloNomoveGames",
@@ -310,6 +421,17 @@ async function load() {
           visible: false,
         },
         {
+          title: "Ratio<br />Unranked<br />No Move",
+          field: "unrankedSoloNomoveGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "unrankedSoloNomoveWinsDelta",
+            gamesDeltaField: "unrankedSoloNomoveGamesDelta",
+          }),
+          visible: false,
+        },
+
+        {
           title: "# Games<br />Unranked<br />NMPZ",
           field: "unrankedSoloNmpzGames",
           sorter: "number",
@@ -331,6 +453,16 @@ async function load() {
           }),
           visible: false,
         },
+        {
+          title: "Ratio<br />Unranked<br />NMPZ",
+          field: "unrankedSoloNmpzGamesDaily",
+          sorter: "number",
+          formatter: dailyRatioFormatter({
+            winsDeltaField: "unrankedSoloNmpzWinsDelta",
+            gamesDeltaField: "unrankedSoloNmpzGamesDelta",
+          }),
+          visible: false,
+        },
 
 
         { title: "Countries<br />Best", field: "bestCountries", sorter: "string", visible: false, cssClass: "wrap-cell" },
@@ -339,6 +471,7 @@ async function load() {
     });
 
     wireToggleButtons(table);
+    setTimeout(() => initTable(table), 1); 
   } else {
     table.replaceData(rows);
   }
@@ -359,3 +492,72 @@ load().catch(err => {
   console.error(err);
   setStatus(`ERROR: ${err.stack || err.message}`);
 });
+
+function readTableSettings() {
+  const defaultSettings = {
+    "gamesAndWins": {
+      "rankedSoloMoving": true,
+      "rankedSoloNomove": false,
+      "rankedSoloNmpz": false,
+      "rankedTeamMoving": false,
+      "rankedTeamNomove": false,
+      "rankedTeamNmpz": false,
+      "unrankedSoloMoving": false,
+      "unrankedSoloNomove": false,
+      "unrankedSoloNmpz": false,
+    },
+    "rating": {
+      "Moving": true,
+      "Nomove": false,
+      "Nmpz": false,
+    }
+  };
+  const settings = localStorage.getItem("userHistoryTableSettings");
+  if (!settings) {
+    localStorage.setItem("userHistoryTableSettings", JSON.stringify(defaultSettings));
+    return defaultSettings;
+  }
+  else {
+    try {
+      return JSON.parse(settings);
+    } catch (err) {
+      localStorage.setItem("userHistoryTableSettings", JSON.stringify(defaultSettings));
+      return defaultSettings;
+    }
+  }
+}
+function updateTableSettings(table, group, field, value) {
+  const settings = readTableSettings();
+  settings[group][field] = value;
+  localStorage.setItem("userHistoryTableSettings", JSON.stringify(settings));
+  if (group === "rating") {
+    const col = table.getColumn("rating" + field);
+    if (col) {
+      if (value) col.show();
+      else col.hide();
+    }
+  }
+  else if (group === "gamesAndWins") {
+    const columnSuffixes = ["Games", "Wins", "GamesDaily"];
+    for (const suffix of columnSuffixes) {
+      const col = table.getColumn(field + suffix);
+      if (col) {
+        if (value) col.show();
+        else col.hide();
+      }
+    }
+  }
+}
+function initTable(table) {
+  const settings = readTableSettings();
+
+  document.querySelectorAll("#userModesTable [data-select-type]").forEach(checkbox => {
+    const group = checkbox.dataset.selectGroup;
+    const type = checkbox.dataset.selectType;
+    checkbox.checked = settings[group][type] || false;
+    updateTableSettings(table, group, type, checkbox.checked);
+    checkbox.addEventListener("change", () => {
+      updateTableSettings(table, group, type, checkbox.checked);
+    });
+  });
+}
