@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -31,6 +32,7 @@ type App struct {
 	db          *pgxpool.Pool
 	userAliases config.UserAliasesConfig
 	state       *HealthState
+	logger      *slog.Logger
 }
 
 type PageData struct {
@@ -42,8 +44,15 @@ type PageData struct {
 func mustLoad() config.ApiConfig {
 	cfg, err := config.LoadConfig[config.ApiConfig](DEFAULT_CONF_PATH, config.ApiConfigDefaults())
 	if err != nil {
-		panic(fmt.Sprintf("failed to load config: %v", err))
+		slog.Error("failed to load config", "err", err)
+		panic("error during initialization")
 	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: cfg.Logging.GetLevel(),
+	}))
+	slog.SetDefault(logger)
+
 	return cfg
 }
 
@@ -68,19 +77,21 @@ func getWebFS(serverCfg config.ApiServerConfig) fs.FS {
 		}
 
 		if _, err := os.Stat(localPath); err != nil {
-			panic(fmt.Sprintf("failed to access local web path %q: %v", localPath, err))
+			slog.Error("failed to access local web path", "path", localPath, "err", err)
+			panic("error during initialization")
 		}
 
-		fmt.Printf("Serving web files from local path: %s\n", localPath)
+		slog.Info("serving web files from local path", "path", localPath)
 		return os.DirFS(localPath)
 	}
 
 	webRoot, err := fs.Sub(embeddedWebFS, "web")
 	if err != nil {
-		panic(fmt.Sprintf("failed to create embedded web filesystem: %v", err))
+		slog.Error("failed to create sub filesystem for embedded web files", "err", err)
+		panic("error during initialization")
 	}
 
-	fmt.Println("Serving web files from embedded filesystem")
+	slog.Info("serving web files from embedded filesystem")
 	return webRoot
 }
 
@@ -106,7 +117,8 @@ func renderPage(webRoot fs.FS, w http.ResponseWriter, page string, data PageData
 func registerWebRoutes(r chi.Router, webRoot fs.FS) {
 	staticFS, err := fs.Sub(webRoot, "static")
 	if err != nil {
-		panic(fmt.Sprintf("failed to create static filesystem: %v", err))
+		slog.Error("failed to create sub filesystem for static files", "err", err)
+		panic("error during initialization")
 	}
 
 	r.Handle("/static/*",
@@ -155,44 +167,43 @@ func registerWebRoutes(r chi.Router, webRoot fs.FS) {
 }
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	slog.SetDefault(logger)
 	cfg := mustLoad()
-	fmt.Println(cfg.Server.LocalServePath)
 
 	dbPool, err := pgxpool.New(context.Background(), cfg.Database.URL)
 	if err != nil {
-		panic(fmt.Sprintf("failed to connect to database: %v", err))
+		logger.Error("failed to connect to database", "err", err)
+		os.Exit(1)
 	}
 	defer dbPool.Close()
-
 	app := &App{
+		logger:      logger.With("component", "api"),
 		userAliases: cfg.UserAliases,
 		db:          dbPool,
 		state:       &HealthState{},
 	}
-
 	r := chi.NewRouter()
-
 	webRoot := getWebFS(cfg.Server)
 	registerWebRoutes(r, webRoot)
-
 	api := humachi.New(r, huma.DefaultConfig("GGWD API", API_VER))
-
 	huma.Get(api, "/api/divisions", app.GetDivisions)
 	huma.Get(api, "/api/users", app.GetUsers)
 	huma.Get(api, "/api/user/{id}", app.GetUserStats)
 	huma.Get(api, "/api/map/{id}", app.GetMapHistory)
-
 	huma.Get(api, "/version", app.Version)
 	huma.Get(api, "/livez", app.Livez)
 	huma.Get(api, "/readyz", app.Readyz)
-
-	fmt.Println(buildinfo.GetBuildInfo())
-
-	fmt.Printf("Starting server at %s\n", cfg.Server.Bind)
-	fmt.Printf("API documentation available at %s\n", linkToDocs(cfg.Server.Bind))
-
+	logger.Info("build info", "version", buildinfo.Version, "date", buildinfo.BuildDate)
+	logger.Info("starting server",
+		"bind", cfg.Server.Bind,
+		"docs", linkToDocs(cfg.Server.Bind),
+	)
 	app.state.started.Store(true)
 	if err := http.ListenAndServe(cfg.Server.Bind, r); err != nil {
-		panic(err)
+		logger.Error("server stopped", "err", err)
+		os.Exit(1)
 	}
 }

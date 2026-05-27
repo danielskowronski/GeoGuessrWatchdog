@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -24,10 +23,11 @@ type DivisionModeMapInfo struct {
 }
 
 func (a *App) GetDivisions(ctx context.Context, input *struct{}) (*DivisionsOutput, error) {
+	a.logger.Debug("handling GetDivisions")
 	q := db.New(a.db)
 	divisions, err := q.GetAllDivisionsInfo(ctx)
 	if err != nil {
-		fmt.Printf("failed to get divisions: %v\n", err)
+		a.logger.Warn("failed to get divisions", "err", err)
 		return nil, huma.Error500InternalServerError("failed to get divisions")
 	}
 

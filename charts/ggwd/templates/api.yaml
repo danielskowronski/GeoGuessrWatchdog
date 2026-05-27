@@ -13,6 +13,8 @@ stringData:
       url: {{ printf "postgres://%s:%s@%s:%v/%s?sslmode=disable" .Values.postgres.worker.username (include "stack.secretValue" (list .Values.shared.dbUsersSecretName "worker-password" .Values.postgres.worker.password .)) .Values.postgres.host (.Values.postgres.port | int) .Values.postgres.worker.database | quote }}
     server:
       bind: ":{{ .Values.api.port }}"
+    logging:
+      level: {{ .Values.worker.config.loggingLevel }}
     {{- if .Values.api.config.userAliases }}
     userAliases:
       {{- range $key, $value := .Values.api.config.userAliases }}

@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
+
+	"go.temporal.io/sdk/activity"
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/apischema"
 	db "github.com/danielskowronski/geoguessrwatchdog/internal/db/generated"
@@ -29,6 +30,7 @@ func NewDB(url string) *DB {
 }
 
 func (d *DB) UpsertDivisionModeMapInfo(ctx context.Context, dmmi apischema.DivisionModeMapInfo) (bool, error) {
+	logger := activity.GetLogger(ctx)
 	pool, err := pgxpool.New(ctx, d.url)
 	if err != nil {
 		return false, err
@@ -47,6 +49,7 @@ func (d *DB) UpsertDivisionModeMapInfo(ctx context.Context, dmmi apischema.Divis
 	if err != nil {
 		// division info not returned
 		if err == pgx.ErrNoRows {
+			logger.Debug("division info not found in DB, inserting new entry", "division_name", dmmi.DivisionName, "game_mode", dmmi.GameMode)
 			// division info not stored yet - expected on DB init and after reorganizations on GeoGuessr side, insert new entry
 			insertDivisionInfoParams := db.InsertDivisionInfoParams{
 				DivisionName: dmmi.DivisionName,
@@ -123,6 +126,7 @@ func MapInfoEqualsDbEntry(mi apischema.MapInfo, dbEntry db.MapInfo) bool {
 }
 
 func (d *DB) UpsertMapInfo(ctx context.Context, mi apischema.MapInfo) (bool, error) {
+	logger := activity.GetLogger(ctx)
 	pool, err := pgxpool.New(ctx, d.url)
 	if err != nil {
 		return false, err
@@ -138,7 +142,7 @@ func (d *DB) UpsertMapInfo(ctx context.Context, mi apischema.MapInfo) (bool, err
 	if err != nil {
 		// map info not returned
 		if err == pgx.ErrNoRows {
-			fmt.Printf("Map info for MapID=%s not found in DB, inserting new entry\n", mi.ID) // FIXME: change to logger
+			logger.Debug("map info not found in DB, inserting new entry", "map_id", mi.ID)
 			// map info not stored yet - expected on DB init and after reorganizations on GeoGuessr side, insert new entry
 			insertMapInfoParams := db.InsertMapInfoParams{
 				ApiID: mi.ID,
@@ -396,6 +400,8 @@ func (d *DB) GetCurrentDivisionMapInfo(ctx context.Context, divisionName string,
 }
 
 func (d *DB) GetLastDivisionMapNotification(ctx context.Context, divisionName string, gameMode string) (*DivisionModeMapDetails, error) {
+	logger := activity.GetLogger(ctx)
+
 	pool, err := pgxpool.New(ctx, d.url)
 	if err != nil {
 		return nil, err
@@ -410,6 +416,7 @@ func (d *DB) GetLastDivisionMapNotification(ctx context.Context, divisionName st
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			logger.Debug("no previous notification found", "division_name", divisionName, "game_mode", gameMode)
 			return nil, ErrNoPreviousNotification
 		}
 		return nil, err

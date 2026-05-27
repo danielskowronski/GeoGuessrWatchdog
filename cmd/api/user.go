@@ -16,6 +16,7 @@ type UsersOutput struct {
 }
 
 func (a *App) GetUsers(ctx context.Context, input *struct{}) (*UsersOutput, error) {
+	a.logger.Debug("handling GetUsers")
 	resp := &UsersOutput{}
 	resp.Body.Users = a.userAliases
 	// TODO: probably need to add unique user from DB without aliases as well
@@ -97,6 +98,7 @@ type UserStatsOutput struct {
 }
 
 func (a *App) GetUserStats(ctx context.Context, input *UserStatsInput) (*UserStatsOutput, error) {
+	a.logger.Debug("handling GetUserStats", "user_id", input.ID)
 	resp := &UserStatsOutput{}
 
 	q := db.New(a.db)
@@ -105,6 +107,7 @@ func (a *App) GetUserStats(ctx context.Context, input *UserStatsInput) (*UserSta
 		if err == pgx.ErrNoRows {
 			return nil, huma.Error404NotFound("user not found")
 		}
+		a.logger.Warn("failed to get user stats", "err", err)
 		return nil, huma.Error500InternalServerError("failed to get user stats")
 	}
 

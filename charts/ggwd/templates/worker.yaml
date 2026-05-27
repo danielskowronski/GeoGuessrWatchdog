@@ -26,6 +26,8 @@ stringData:
       {{- if .Values.gluetun.enabled }}
       proxy: http://{{ include "stack.fullname" . }}-gluetun:{{ .Values.gluetun.httpProxyPort }}
       {{- end }}
+    logging:
+      level: {{ .Values.worker.config.loggingLevel }}
     {{- if .Values.worker.config.shoutrrrTargets }}
     notifierApi:
       shoutrrr:

@@ -8,6 +8,7 @@ type WorkerConfig struct {
 	NotifierAPI  NotifierAPIConfig  `koanf:"notifierApi"`
 	Watchdogs    WatchdogsConfig    `koanf:"watchdogs"`
 	Preflight    PreflightConfig    `koanf:"preflight"`
+	Logging      LoggingConfig      `koanf:"logging"`
 }
 
 type HealthCheckConfig struct {

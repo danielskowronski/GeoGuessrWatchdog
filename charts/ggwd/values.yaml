@@ -73,6 +73,7 @@ worker:
           minute: 0
         observeUsers: []
     cookie: ""  # if set, added to config, else need to set via user secret or env
+    loggingLevel: info
     extraSecrets: []  # after helm generated configmap, all those are added in order to GGWD_CONFIG_PATH
     #  - name: ggwd-extra-secrets
     #    items:
@@ -100,6 +101,7 @@ api:
     generatedConfigFilename: config.yaml
     userAliases:
       "61edaa9efa85ad00017053a9": "Blinky"
+    loggingLevel: info
   port: 8090
   ingress:
     enabled: true

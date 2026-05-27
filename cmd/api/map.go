@@ -30,6 +30,7 @@ type MapHistoryOutput struct {
 }
 
 func (a *App) GetMapHistory(ctx context.Context, input *MapHistoryInput) (*MapHistoryOutput, error) {
+	a.logger.Debug("handling GetMapHistory", "map_id", input.ID)
 	resp := &MapHistoryOutput{}
 
 	q := db.New(a.db)
@@ -38,7 +39,7 @@ func (a *App) GetMapHistory(ctx context.Context, input *MapHistoryInput) (*MapHi
 		if err == pgx.ErrNoRows {
 			return nil, huma.Error404NotFound("map not found")
 		}
-		fmt.Printf("failed to get map history: %v\n", err)
+		a.logger.Warn("failed to get map history", "err", err)
 		return nil, huma.Error500InternalServerError("failed to get map history")
 	}
 	resp.Body.Name = info.Name
@@ -47,7 +48,7 @@ func (a *App) GetMapHistory(ctx context.Context, input *MapHistoryInput) (*MapHi
 
 	history, err := q.GetMapHistory(ctx, input.ID)
 	if err != nil {
-		fmt.Printf("failed to get map history: %v\n", err)
+		a.logger.Warn("failed to get map history", "err", err)
 		return nil, huma.Error500InternalServerError("failed to get map history")
 	}
 

@@ -2,6 +2,9 @@
 database:
   url: postgres://app:app@postgres-app:5432/app?sslmode=disable
 
+logging:
+  level: debug
+
 temporal:
   address: temporal:7233
   namespace: default

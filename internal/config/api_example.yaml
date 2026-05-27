@@ -2,6 +2,9 @@
 database:
   url: postgres://app:app@postgres-app:5432/app?sslmode=disable
 
+logging:
+  level: info  # "debug", "info", "warn", "error"
+
 server:
   bind: ":8080"
 

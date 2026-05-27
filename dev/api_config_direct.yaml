@@ -7,3 +7,5 @@ server:
   localServePath: ./web
 userAliases:
   "61edaa9efa85ad00017053a9": "Blinky"
+logging:
+  level: debug

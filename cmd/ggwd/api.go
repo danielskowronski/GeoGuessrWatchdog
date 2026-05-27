@@ -14,6 +14,7 @@ import (
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/apischema"
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
+	"go.temporal.io/sdk/activity"
 )
 
 type ApiClient struct {
@@ -129,8 +130,9 @@ func (a *ApiClient) FetchJSON(ctx context.Context, targetURL string) (json.RawMe
 }
 
 func (a *ApiClient) FetchDivisions(ctx context.Context) ([]apischema.DivisionModeMapInfo, int, error) {
+	logger := activity.GetLogger(ctx)
 	url := a.apiBase + GG_API_PATH_DIVISIONS_LIST
-	fmt.Printf("Fetching divisions list from API: %s\n", url) // FIXME: change to logger
+	logger.Debug("fetching divisions list from API", "url", url)
 	body, code, err := a.FetchJSON(ctx, url)
 	if err != nil {
 		return nil, code, err

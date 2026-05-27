@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -15,10 +16,6 @@ import (
 const (
 	CONF_PATH_ENV_VAR = "GGWD_CONFIG_PATH"
 )
-
-type DatabaseConfig struct {
-	URL string `koanf:"url"`
-}
 
 func LoadConfig[T any](defaultPath string, defaults map[string]any) (T, error) {
 	configPath := os.Getenv(CONF_PATH_ENV_VAR)
@@ -46,7 +43,7 @@ func Load[T any](pathsCommaSeparated string, defaults map[string]any) (*T, error
 		paths := strings.Split(pathsCommaSeparated, ",")
 		for _, path := range paths {
 			path = strings.TrimSpace(path)
-			fmt.Printf("loading config from %s ...\n", path)
+			slog.Debug("loading config from file", "path", path)
 			if path != "" {
 				if err := k.Load(file.Provider(path), yaml.Parser()); err != nil {
 					return nil, err

@@ -5,6 +5,9 @@ database:
 healthcheck:
   healthBind: ":8080"
 
+logging:
+  level: info  # "debug", "info", "warn", "error"
+
 temporal:
   address: temporal:7233
   namespace: default

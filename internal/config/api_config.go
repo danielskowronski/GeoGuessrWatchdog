@@ -4,6 +4,7 @@ type ApiConfig struct {
 	Database    DatabaseConfig    `koanf:"database"`
 	Server      ApiServerConfig   `koanf:"server"`
 	UserAliases UserAliasesConfig `koanf:"userAliases"`
+	Logging     LoggingConfig     `koanf:"logging"`
 }
 
 type ApiServerConfig struct {
