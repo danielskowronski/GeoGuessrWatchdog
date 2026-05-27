@@ -117,6 +117,39 @@ spec:
               mountPath: {{ .Values.cacheStorage.path }}
             {{- end }}
           resources: {{ toYaml .Values.worker.resources | nindent 12 }}
+          {{- if .Values.worker.healthchecks.startup.enabled }}
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: {{ .Values.worker.healthchecks.port }}
+            initialDelaySeconds: {{ .Values.worker.healthchecks.startup.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.worker.healthchecks.startup.timeoutSeconds }}
+            periodSeconds: {{ .Values.worker.healthchecks.startup.periodSeconds }}
+            successThreshold: {{ .Values.worker.healthchecks.startup.successThreshold }}
+            failureThreshold: {{ .Values.worker.healthchecks.startup.failureThreshold }}
+          {{- end }}
+          {{- if .Values.worker.healthchecks.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: {{ .Values.worker.healthchecks.port }}
+            initialDelaySeconds: {{ .Values.worker.healthchecks.liveness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.worker.healthchecks.liveness.timeoutSeconds }}
+            periodSeconds: {{ .Values.worker.healthchecks.liveness.periodSeconds }}
+            successThreshold: {{ .Values.worker.healthchecks.liveness.successThreshold }}
+            failureThreshold: {{ .Values.worker.healthchecks.liveness.failureThreshold }}
+          {{- end }}
+          {{- if .Values.worker.healthchecks.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ .Values.worker.healthchecks.port }}
+            initialDelaySeconds: {{ .Values.worker.healthchecks.readiness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.worker.healthchecks.readiness.timeoutSeconds }}
+            periodSeconds: {{ .Values.worker.healthchecks.readiness.periodSeconds }}
+            successThreshold: {{ .Values.worker.healthchecks.readiness.successThreshold }}
+            failureThreshold: {{ .Values.worker.healthchecks.readiness.failureThreshold }}
+          {{- end }}
       volumes:
         - name: generated-config
           secret:

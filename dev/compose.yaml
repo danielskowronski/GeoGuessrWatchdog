@@ -96,6 +96,8 @@ services:
     volumes:
       - ./worker_config.yaml:/etc/ggwd/config.yaml:ro
       - ggwd_cache:/srv/ggwd_cache
+    ports:
+      - "8081:8080"
   api:
     networks:
       - appnet

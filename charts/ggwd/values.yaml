@@ -30,6 +30,30 @@ worker:
     - /usr/local/bin/ggwd-worker
   args:
     - worker
+  healthchecks:
+    port: 8080
+    startup:
+      enabled: true
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 5
+    liveness:
+      enabled: true
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 5
+    readiness:
+      enabled: true
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 5
+
   config:
     # all below optiosn can be overriden with injected configmaps
     generatedConfigDir: /etc/ggwd
@@ -83,6 +107,28 @@ api:
     host: ggwd.example.internal
     annotations: {}
     tls: []
+  healthchecks:
+    startup:
+      enabled: true
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 5
+    liveness:
+      enabled: true
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 5
+    readiness:
+      enabled: true
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 5
 
 cacheBrowser:
   enabled: true

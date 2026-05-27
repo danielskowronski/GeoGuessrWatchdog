@@ -11,6 +11,7 @@ import (
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/buildinfo"
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/cobra"
 )
 
@@ -60,30 +61,46 @@ func startWorker() error {
 		fmt.Printf("public IP: %s\n", ip)
 	}
 
-	c := mustTemporalClient(cfg.Temporal)
-	defer c.Close()
+	temporalClient := mustTemporalClient(cfg.Temporal)
+	defer temporalClient.Close()
+
+	healthCtx, healthCancel := context.WithCancel(context.Background())
+	defer healthCancel()
+
+	healthState := &HealthState{}
+
+	dbpool, err := pgxpool.New(context.Background(), cfg.Database.URL)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create healthcheck db pool: %v", err))
+	}
+	defer dbpool.Close()
+
+	startHealthServer(healthCtx, cfg.HealthCheck.HealthBind, dbpool, temporalClient, healthState)
 
 	fmt.Println("ensuring schedules...")
-	err := EnsureFetchDivisionsMapsSchedule(context.Background(), c, cfg)
+	err = EnsureFetchDivisionsMapsSchedule(context.Background(), temporalClient, cfg)
 	if err != nil {
 		panic(fmt.Sprintf("failed to ensure schedules: %v", err))
 	}
-	err = EnsureFetchUserStatsAndProgressSchedule(context.Background(), c, cfg)
+	err = EnsureFetchUserStatsAndProgressSchedule(context.Background(), temporalClient, cfg)
 	if err != nil {
 		panic(fmt.Sprintf("failed to ensure schedules: %v", err))
 	}
 
-	w := worker.New(c, cfg.Temporal.TaskQueue, worker.Options{})
+	temporalWorker := worker.New(temporalClient, cfg.Temporal.TaskQueue, worker.Options{})
 	acts := &Activities{
 		Config: cfg,
 	}
-	w.RegisterWorkflow(FetchDivisionsMapsWorkflow)
-	w.RegisterWorkflow(FetchMuiltipleUsersStatsAndProgressWorkflow)
-	w.RegisterWorkflow(FetchSingleUserStatsAndProgressWorkflow)
-	w.RegisterActivity(acts)
+	temporalWorker.RegisterWorkflow(FetchDivisionsMapsWorkflow)
+	temporalWorker.RegisterWorkflow(FetchMuiltipleUsersStatsAndProgressWorkflow)
+	temporalWorker.RegisterWorkflow(FetchSingleUserStatsAndProgressWorkflow)
+	temporalWorker.RegisterActivity(acts)
 	fmt.Println("starting Temporal worker...")
 
-	if err := w.Run(worker.InterruptCh()); err != nil {
+	healthState.started.Store(true)
+
+	if err := temporalWorker.Run(worker.InterruptCh()); err != nil {
+		healthState.started.Store(false)
 		panic(err)
 	}
 

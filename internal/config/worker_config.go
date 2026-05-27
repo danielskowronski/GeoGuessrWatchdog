@@ -2,11 +2,16 @@ package config
 
 type WorkerConfig struct {
 	Database     DatabaseConfig     `koanf:"database"`
+	HealthCheck  HealthCheckConfig  `koanf:"healthcheck"`
 	Temporal     TemporalConfig     `koanf:"temporal"`
 	GeoguessrAPI GeoguessrAPIConfig `koanf:"geoguessrApi"`
 	NotifierAPI  NotifierAPIConfig  `koanf:"notifierApi"`
 	Watchdogs    WatchdogsConfig    `koanf:"watchdogs"`
 	Preflight    PreflightConfig    `koanf:"preflight"`
+}
+
+type HealthCheckConfig struct {
+	HealthBind string `koanf:"healthBind"`
 }
 
 type PreflightConfig struct {
@@ -103,6 +108,8 @@ func WorkerConfigDefaults() map[string]any {
 		"temporal.address":   "localhost:7233",
 		"temporal.namespace": "default",
 		"temporal.taskQueue": "ggwd-task-queue",
+
+		"healthcheck.healthBind": ":8080",
 
 		"geoguessrApi.baseUrl":        "https://www.geoguessr.com/api",
 		"geoguessrApi.proxy":          "",

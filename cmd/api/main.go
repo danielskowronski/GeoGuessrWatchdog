@@ -30,12 +30,7 @@ var embeddedWebFS embed.FS
 type App struct {
 	db          *pgxpool.Pool
 	userAliases config.UserAliasesConfig
-}
-
-type HealthOutput struct {
-	Body struct {
-		Status string `json:"status"`
-	}
+	state       *HealthState
 }
 
 type PageData struct {
@@ -172,6 +167,7 @@ func main() {
 	app := &App{
 		userAliases: cfg.UserAliases,
 		db:          dbPool,
+		state:       &HealthState{},
 	}
 
 	r := chi.NewRouter()
@@ -181,22 +177,21 @@ func main() {
 
 	api := humachi.New(r, huma.DefaultConfig("GGWD API", API_VER))
 
-	huma.Get(api, "/health", func(ctx context.Context, input *struct{}) (*HealthOutput, error) {
-		resp := &HealthOutput{}
-		resp.Body.Status = "ok"
-		return resp, nil
-	})
-
 	huma.Get(api, "/api/divisions", app.GetDivisions)
 	huma.Get(api, "/api/users", app.GetUsers)
 	huma.Get(api, "/api/user/{id}", app.GetUserStats)
 	huma.Get(api, "/api/map/{id}", app.GetMapHistory)
+
+	huma.Get(api, "/version", app.Version)
+	huma.Get(api, "/livez", app.Livez)
+	huma.Get(api, "/readyz", app.Readyz)
 
 	fmt.Println(buildinfo.GetBuildInfo())
 
 	fmt.Printf("Starting server at %s\n", cfg.Server.Bind)
 	fmt.Printf("API documentation available at %s\n", linkToDocs(cfg.Server.Bind))
 
+	app.state.started.Store(true)
 	if err := http.ListenAndServe(cfg.Server.Bind, r); err != nil {
 		panic(err)
 	}

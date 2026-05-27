@@ -79,6 +79,39 @@ spec:
               readOnly: true
             {{- end }}
           resources: {{ toYaml .Values.api.resources | nindent 12 }}
+          {{- if .Values.api.healthchecks.startup.enabled }}
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: {{ .Values.api.healthchecks.startup.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.api.healthchecks.startup.timeoutSeconds }}
+            periodSeconds: {{ .Values.api.healthchecks.startup.periodSeconds }}
+            successThreshold: {{ .Values.api.healthchecks.startup.successThreshold }}
+            failureThreshold: {{ .Values.api.healthchecks.startup.failureThreshold }}
+          {{- end }}
+          {{- if .Values.api.healthchecks.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: {{ .Values.api.healthchecks.liveness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.api.healthchecks.liveness.timeoutSeconds }}
+            periodSeconds: {{ .Values.api.healthchecks.liveness.periodSeconds }}
+            successThreshold: {{ .Values.api.healthchecks.liveness.successThreshold }}
+            failureThreshold: {{ .Values.api.healthchecks.liveness.failureThreshold }}
+          {{- end }}
+          {{- if .Values.api.healthchecks.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: {{ .Values.api.healthchecks.readiness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.api.healthchecks.readiness.timeoutSeconds }}
+            periodSeconds: {{ .Values.api.healthchecks.readiness.periodSeconds }}
+            successThreshold: {{ .Values.api.healthchecks.readiness.successThreshold }}
+            failureThreshold: {{ .Values.api.healthchecks.readiness.failureThreshold }}
+          {{- end }}
       volumes:
         - name: generated-config
           secret:
