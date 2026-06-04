@@ -134,14 +134,13 @@ api:
 
 prometheus:
   annotations: {}
+  labels: {}
   serviceMonitor:
     enabled: false
-    labels: {}
     interval: 30s
     scrapeTimeout: 10s
   rules:
     enabled: false
-    labels: {}
     divisionsAndAllRelatedMaps:
       enabled: true
       timeHours: 12
