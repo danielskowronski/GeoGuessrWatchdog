@@ -327,3 +327,31 @@ func RunUserStatsFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggCo
 		FetchedAt:     time.Now().UTC(),
 	}, nil
 }
+
+func (a *Activities) StoreFetchStatusActivity(ctx context.Context, input StoreFetchStatusInput) (StoreFetchStatusOutput, error) {
+	result, err := RunStoreFetchStatus(ctx, a.Config.Database, input.FetchType, input.WasSuccess)
+	if err != nil {
+		return StoreFetchStatusOutput{}, err
+	}
+
+	return result, nil
+}
+
+func RunStoreFetchStatus(ctx context.Context, dbConfig config.DatabaseConfig, fetchType string, wasSuccess bool) (StoreFetchStatusOutput, error) {
+	if !wasSuccess {
+		// fetch_status for now keeps only successes
+		return StoreFetchStatusOutput{}, nil
+	}
+
+	db := NewDB(dbConfig.URL)
+
+	timestamp, err := db.UpsertSuccessfulFetchStatus(ctx, fetchType)
+	if err != nil {
+		return StoreFetchStatusOutput{}, err
+	}
+
+	return StoreFetchStatusOutput{
+		DatabaseTimestamp: timestamp,
+		FetchType:         fetchType,
+	}, nil
+}

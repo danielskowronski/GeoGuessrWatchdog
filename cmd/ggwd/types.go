@@ -87,3 +87,13 @@ type UserStatsFetchOutput struct {
 	GamesCount    uint64    `json:"games_count"`
 	FetchedAt     time.Time `json:"fetched_at"`
 }
+
+type StoreFetchStatusInput struct {
+	FetchType  string `json:"fetch_type"`
+	WasSuccess bool   `json:"was_success"`
+	// FUTURE: list of endpoints, their return codes, time it took, etc.
+}
+type StoreFetchStatusOutput struct {
+	FetchType         string    `json:"fetch_type"`
+	DatabaseTimestamp time.Time `json:"database_timestamp"`
+}

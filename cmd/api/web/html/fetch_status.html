@@ -1,0 +1,15 @@
+{{ define "content" }}
+<section class="card">
+  <div class="toolbar">
+    <button id="reload">Reload</button>
+    <button data-toggle-column="fetchType">
+      Toggle raw fetch type
+    </button>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="fetch-statuses-table"></div>
+</section>
+{{ end }} {{ define "scripts" }}
+<script type="module" src="/static/pages/fetch_status.js"></script>
+{{ end }}

@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/danielskowronski/geoguessrwatchdog/internal/db"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
@@ -17,6 +18,7 @@ const (
 )
 
 func FetchDivisionsMapsWorkflow(ctx workflow.Context, input FetchDivisionsMapsWorkflowInput) error {
+	logger := workflow.GetLogger(ctx)
 
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(input.TemporalOptions.FanoutActivity.StartToCloseTimeoutSeconds) * time.Second,
@@ -62,6 +64,14 @@ func FetchDivisionsMapsWorkflow(ctx workflow.Context, input FetchDivisionsMapsWo
 		}
 	}
 
+	if err := workflow.ExecuteActivity(ctx, (*Activities).StoreFetchStatusActivity, StoreFetchStatusInput{
+		FetchType:  db.FetchTypeDivisionsAndAllRelatedMaps,
+		WasSuccess: true, // if we are here, it means all previous steps were successful, otherwise we would have returned with an error
+	}).Get(ctx, nil); err != nil {
+		logger.Error("failed to store last fetch status", "error", err)
+		// this is non-fatal issue
+	}
+
 	if input.TriggerNotifications {
 		// always running to handle situations where some activities failed before
 		if err := workflow.ExecuteActivity(ctx, (*Activities).NotifyAboutMapChangeActivity, NotifierInput{}).Get(ctx, nil); err != nil {
@@ -73,6 +83,7 @@ func FetchDivisionsMapsWorkflow(ctx workflow.Context, input FetchDivisionsMapsWo
 }
 
 func FetchSingleUserStatsAndProgressWorkflow(ctx workflow.Context, input FetchSingleUserStatsAndProgressWorkflowInput) error {
+	logger := workflow.GetLogger(ctx)
 
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(input.TemporalOptions.FanoutActivity.StartToCloseTimeoutSeconds) * time.Second,
@@ -109,6 +120,15 @@ func FetchSingleUserStatsAndProgressWorkflow(ctx workflow.Context, input FetchSi
 			return err
 		}
 	}
+
+	if err := workflow.ExecuteActivity(ctx, (*Activities).StoreFetchStatusActivity, StoreFetchStatusInput{
+		FetchType:  db.FetchTypeAllUserStatsPrefix + input.UserID,
+		WasSuccess: true, // if we are here, it means all previous steps were successful, otherwise we would have returned with an error
+	}).Get(ctx, nil); err != nil {
+		logger.Error("failed to store last fetch status", "error", err)
+		// this is non-fatal issue
+	}
+
 	return nil
 }
 

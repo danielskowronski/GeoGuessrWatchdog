@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.temporal.io/sdk/activity"
 
@@ -482,4 +483,21 @@ func (d *DB) UpsertDivisionMapNotification(ctx context.Context, dmmd DivisionMod
 	}
 
 	return nil
+}
+
+func (d *DB) UpsertSuccessfulFetchStatus(ctx context.Context, fetchType string) (time.Time, error) {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return time.Time{}, err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	lastSuccess, err := q.UpsertFetchStatus(ctx, fetchType)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return lastSuccess.Time, nil
 }

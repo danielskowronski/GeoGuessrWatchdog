@@ -54,6 +54,11 @@ type DivisionMapLastNotification struct {
 	Timestamp         pgtype.Timestamptz
 }
 
+type FetchStatus struct {
+	FetchType   string
+	LastSuccess pgtype.Timestamptz
+}
+
 type MapHistory struct {
 	ID             int64
 	MapID          int64

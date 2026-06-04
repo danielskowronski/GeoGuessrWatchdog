@@ -27,6 +27,11 @@ export async function getUsers() {
   return body.users || {};
 }
 
+export async function getFetchStatuses() {
+  const body = await apiGet("/api/fetch_statuses");
+  return body.fetches || [];
+}
+
 export async function getUserHistory(userId) {
   const body = await apiGet(`/api/user/${encodeURIComponent(userId)}`);
   return body.entries || [];

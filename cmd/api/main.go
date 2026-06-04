@@ -128,7 +128,10 @@ func registerWebRoutes(r chi.Router, webRoot fs.FS) {
 	)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/divisions", http.StatusFound)
+		renderPage(webRoot, w, "fetch_status", PageData{
+			Title:   "GGWD Fetch Status",
+			Heading: "Fetch Status",
+		})
 	})
 
 	r.Get("/divisions", func(w http.ResponseWriter, r *http.Request) {
@@ -193,6 +196,7 @@ func main() {
 	huma.Get(api, "/api/users", app.GetUsers)
 	huma.Get(api, "/api/user/{id}", app.GetUserStats)
 	huma.Get(api, "/api/map/{id}", app.GetMapHistory)
+	huma.Get(api, "/api/fetch_statuses", app.GetFetchStatuses)
 	huma.Get(api, "/version", app.Version)
 	huma.Get(api, "/livez", app.Livez)
 	huma.Get(api, "/readyz", app.Readyz)

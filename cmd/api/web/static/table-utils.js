@@ -164,6 +164,54 @@ export function gameModeFormatter(cell) {
 export function dateTimeFormatter(cell) {
   return fmtDateTime(cell.getValue());
 }
+export function dateTimeRelativeFormatter(cell, options = {}) {
+  const { thresholdHours = 24 } = options;
+  const value = cell.getValue();
+
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  const now = new Date();
+  const ageMs = now.getTime() - date.getTime();
+  const ageHours = ageMs / (1000 * 60 * 60);
+
+  const className = ageHours > thresholdHours
+    ? "delta-negative"
+    : "delta-positive";
+
+  const relativeFormatter = new Intl.RelativeTimeFormat(undefined, {
+    numeric: "auto",
+  });
+
+  let relative;
+
+  const absMs = Math.abs(ageMs);
+  const absMinutes = Math.round(absMs / (1000 * 60));
+  const absHours = Math.round(absMs / (1000 * 60 * 60));
+  const absDays = Math.round(absMs / (1000 * 60 * 60 * 24));
+
+  if (absMinutes < 60) {
+    relative = relativeFormatter.format(-Math.round(ageMs / (1000 * 60)), "minute");
+  } else if (absHours < 73) {
+    relative = relativeFormatter.format(-Math.round(ageMs / (1000 * 60 * 60)), "hour");
+  } else {
+    relative = relativeFormatter.format(-Math.round(ageMs / (1000 * 60 * 60 * 24)), "day");
+  }
+
+  const span = document.createElement("span");
+  span.className = className;
+  span.title = date.toLocaleString();
+  span.textContent = relative;
+
+  return span;
+}
 export function dateFormatter(cell) {
   return fmtDateTimeDateOnly(cell.getValue());
 }
