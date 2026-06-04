@@ -1,0 +1,74 @@
+{{- if and .Values.api.enabled .Values.prometheus.serviceMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "stack.fullname" . }}-api
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+    {{- with .Values.prometheus.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.prometheus.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.prometheus.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.prometheus.serviceMonitor.scrapeTimeout }}
+{{- end }}
+
+{{- $rulesEnabled := and .Values.api.enabled .Values.prometheus.rules.enabled }}
+{{- $divisionsRule := .Values.prometheus.rules.divisionsAndAllRelatedMaps }}
+{{- $userStatsRule := .Values.prometheus.rules.observedUserStats }}
+{{- $alertUsers := $userStatsRule.users }}
+{{- if and $rulesEnabled (or $divisionsRule.enabled (and $userStatsRule.enabled $alertUsers)) }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "stack.fullname" . }}-fetch-status
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+    {{- with .Values.prometheus.rules.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.prometheus.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    - name: {{ include "stack.fullname" . }}.fetch-status
+      rules:
+        {{- if $divisionsRule.enabled }}
+        - alert: GGWD_DivisionsAndRelatedMapsFetchStale
+          expr: time() - ggwd_fetch_last_success_timestamp_seconds{fetch_type="divisions_and_all_related_maps"} > {{ mul ($divisionsRule.timeHours | int) 3600 }}
+          labels:
+            severity: {{ $divisionsRule.severity | quote }}
+          annotations:
+            summary: GGWD divisions and related maps fetch is stale
+            description: The divisions_and_all_related_maps fetch has not succeeded within {{ $divisionsRule.timeHours }} hours.
+        {{- end }}
+        {{- if and $userStatsRule.enabled $alertUsers }}
+        {{- $alertUserMatchers := list }}
+        {{- range $userID := $alertUsers }}
+        {{- $alertUserMatchers = append $alertUserMatchers ($userID | regexQuoteMeta) }}
+        {{- end }}
+        - alert: GGWD_ObservedUserStatsFetchStale
+          expr: time() - ggwd_fetch_last_success_timestamp_seconds{fetch_type=~{{ printf "^all_user_stats/(%s)$" (join "|" $alertUserMatchers) | quote }}} > {{ mul ($userStatsRule.timeHours | int) 3600 }}
+          labels:
+            severity: {{ $userStatsRule.severity | quote }}
+          annotations:
+            summary: GGWD observed user stats fetch is stale
+            description: One or more observed user stats fetches have not succeeded within {{ $userStatsRule.timeHours }} hours.
+        {{- end }}
+{{- end }}

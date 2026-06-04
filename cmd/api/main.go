@@ -33,6 +33,7 @@ type App struct {
 	userAliases config.UserAliasesConfig
 	state       *HealthState
 	logger      *slog.Logger
+	metrics     *Metrics
 }
 
 type PageData struct {
@@ -188,9 +189,11 @@ func main() {
 		db:          dbPool,
 		state:       &HealthState{},
 	}
+	app.metrics = NewMetrics(app)
 	r := chi.NewRouter()
 	webRoot := getWebFS(cfg.Server)
 	registerWebRoutes(r, webRoot)
+	r.Handle("/metrics", app.metrics.Handler())
 	api := humachi.New(r, huma.DefaultConfig("GGWD API", API_VER))
 	huma.Get(api, "/api/divisions", app.GetDivisions)
 	huma.Get(api, "/api/users", app.GetUsers)

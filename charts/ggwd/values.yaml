@@ -132,6 +132,26 @@ api:
       successThreshold: 1
       failureThreshold: 5
 
+prometheus:
+  annotations: {}
+  serviceMonitor:
+    enabled: false
+    labels: {}
+    interval: 30s
+    scrapeTimeout: 10s
+  rules:
+    enabled: false
+    labels: {}
+    divisionsAndAllRelatedMaps:
+      enabled: true
+      timeHours: 12
+      severity: warning
+    observedUserStats:
+      enabled: true
+      users: []
+      timeHours: 25
+      severity: warning
+
 cacheBrowser:
   enabled: true
   image:

@@ -130,6 +130,7 @@ metadata:
   name: {{ include "stack.fullname" . }}-api
   labels:
     {{- include "stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
 spec:
   type: ClusterIP
   selector:
