@@ -65,3 +65,27 @@ make release-prepare
 make release-finish
 cd charts; helm -n app-ggwd upgrade --install ggwd ggwd --values values.yaml --set 'temporal.enabled=true'; cd -
 ```
+
+## Prod
+
+Assuming namespace `app-ggwd` and chart name `ggwd`.
+
+### Deploy
+
+See [charts/README.md](./charts/README.md).
+
+```bash
+cd charts/
+helm dependency update
+helm -n app-ggwd upgrade --install ggwd ggwd --values values.yaml --set 'temporal.enabled=false'
+helm -n app-ggwd upgrade --install ggwd ggwd --values values.yaml --set 'temporal.enabled=true'
+```
+
+### DB backup
+
+Assuming pod prefix `ggwd-` and DB name of `ggwd`:
+
+```bash
+kubectl -n app-ggwd exec ggwd-postgresql-0 -- sh -c 'PGPASSWORD="$(cat /opt/bitnami/postgresql/secrets/postgres-password)" pg_dump -h localhost -U postgres ggwd' > prod_`date +%s`.sql
+ls -alh prod_*.sql
+```

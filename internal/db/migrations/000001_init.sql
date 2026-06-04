@@ -1,3 +1,6 @@
+-- 00001_init.sql
+
+-- +goose Up
 CREATE TABLE IF NOT EXISTS division_info (
   id BIGSERIAL PRIMARY KEY,
   division_name TEXT NOT NULL,
@@ -58,8 +61,6 @@ CREATE TABLE IF NOT EXISTS map_history (
 );
 CREATE INDEX IF NOT EXISTS map_history_map_id_idx
   ON map_history (map_id);
-
----
 
 CREATE TABLE IF NOT EXISTS user_fetch_history (
   id BIGSERIAL PRIMARY KEY,
@@ -163,8 +164,6 @@ LEFT JOIN user_progress_history uph
 LEFT JOIN user_stats_history ush
   ON ush.fetch_id = ufh.id;
 
----
-
 CREATE OR REPLACE VIEW division_map_info AS
 SELECT
   di.division_name as division_name,
@@ -201,3 +200,6 @@ CREATE TABLE IF NOT EXISTS division_map_last_notifications (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS division_map_last_notifications_selector_idx
   ON division_map_last_notifications (division_name, game_mode);
+
+-- +goose Down
+-- intentionally empty

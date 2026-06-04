@@ -11,6 +11,7 @@ import (
 	"go.temporal.io/sdk/worker"
 
 	"github.com/danielskowronski/geoguessrwatchdog/internal/config"
+	"github.com/danielskowronski/geoguessrwatchdog/internal/db"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/cobra"
 	"go.temporal.io/sdk/log"
@@ -89,6 +90,11 @@ func startWorker() error {
 		panic("error during initialization")
 	}
 	defer dbpool.Close()
+
+	if err := db.RunMigrations(context.Background(), cfg.Database.URL, slog.Default()); err != nil {
+		return err
+	}
+	healthState.migrated.Store(true)
 
 	startHealthServer(healthCtx, cfg.HealthCheck.HealthBind, dbpool, temporalClient, healthState)
 

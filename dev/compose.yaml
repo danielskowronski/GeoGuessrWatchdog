@@ -56,7 +56,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata_app:/var/lib/postgresql/data
-      - ../internal/db/migrations:/docker-entrypoint-initdb.d:ro
+    #  - ../internal/db/migrations:/docker-entrypoint-initdb.d:ro
 
   gluetun:
     networks:

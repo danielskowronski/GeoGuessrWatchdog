@@ -15,6 +15,7 @@ import (
 
 type HealthState struct {
 	started      atomic.Bool
+	migrated     atomic.Bool
 	shuttingDown atomic.Bool
 }
 
@@ -41,6 +42,10 @@ func startHealthServer(
 			http.Error(w, "worker not started", http.StatusServiceUnavailable)
 			return
 		}
+		if !state.migrated.Load() {
+			http.Error(w, "database migrations not applied", http.StatusServiceUnavailable)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok\n"))
 	})
@@ -48,6 +53,10 @@ func startHealthServer(
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {
 		if !state.started.Load() {
 			http.Error(w, "worker not started", http.StatusServiceUnavailable)
+			return
+		}
+		if !state.migrated.Load() {
+			http.Error(w, "database migrations not applied", http.StatusServiceUnavailable)
 			return
 		}
 		if state.shuttingDown.Load() {

@@ -1,1 +1,1 @@
-take care of DB migration for app manually!
+GGWD version {{ include "ggwd.image" . }} deployed!
