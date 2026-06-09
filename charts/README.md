@@ -1,11 +1,16 @@
 # Install chart
 
-dirty workaround for now, because temporal has pre job which expects postgres to be already working
+First install will take some time.
 
 ```bash
 helm dependency update
-helm -n app-ggwd upgrade --install ggwd ggwd --values values.yaml --set 'temporal.enabled=false'
-helm -n app-ggwd upgrade --install ggwd ggwd --values values.yaml --set 'temporal.enabled=true'
+helm -n app-ggwd upgrade --install ggwd ggwd --values values.yaml
+```
+
+```bash
+kubectl create namespace test-ggwd
+helm -n test-ggwd upgrade --install ggwd ggwd --values values_test.yaml
+kubectl delete namespace test-ggwd
 ```
 
 minimum `values.yaml`:

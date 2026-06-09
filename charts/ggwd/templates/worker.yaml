@@ -11,7 +11,7 @@ stringData:
     database:
       url: {{ printf "postgres://%s:%s@%s:%v/%s?sslmode=disable" .Values.postgres.worker.username (include "stack.secretValue" (list .Values.shared.dbUsersSecretName "worker-password" .Values.postgres.worker.password .)) .Values.postgres.host (.Values.postgres.port | int) .Values.postgres.worker.database | quote }}
     temporal:
-      address: {{ include "stack.fullname" . }}-temporal-frontend:7233
+      address: {{ include "ggwd.temporalFullname" . }}-frontend:7233
       namespace: ggwd
     geoguessrApi:
       timeoutSeconds: 30
@@ -82,7 +82,7 @@ spec:
       imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
       containers:
         - name: worker
-          image: "{{ include "ggwd.image" . }}"
+          image: "{{ include "ggwd.workerImage" . }}"
           imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
           {{- with .Values.worker.command }}
           command: {{ toYaml . | nindent 12 }}
@@ -96,7 +96,7 @@ spec:
                 {{ .Values.worker.config.generatedConfigDir }}/{{ .Values.worker.config.generatedConfigFilename }}
                 {{- range .Values.worker.config.extraSecrets }}
                 {{- range .items }}
-                ,{{ .diskPath }}/{{ .secretKey }}
+                ,{{ printf "%s/%s" .diskPath .secretKey | clean }}
                 {{- end }}
                 {{- end }}
             {{- range $k, $v := .Values.worker.env }}
@@ -109,10 +109,13 @@ spec:
               subPath: {{ .Values.worker.config.generatedConfigFilename }}
               readOnly: true
             {{- range .Values.worker.config.extraSecrets }}
-            - name: {{ .name }}
-              mountPath: {{ .diskPath }}
+            {{- $secretMountName := .name }}
+            {{- range .items }}
+            - name: {{ $secretMountName }}
+              mountPath: {{ printf "%s/%s" .diskPath .secretKey | clean }}
               subPath: {{ .secretKey }}
               readOnly: true
+            {{- end }}
             {{- end }}
             {{- if .Values.cacheStorage.enabled }}
             - name: cache-storage

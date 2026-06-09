@@ -10,8 +10,22 @@
 {{- end -}}
 {{- end -}}
 
-{{- define "ggwd.image" -}}
+{{- define "ggwd.workerImage" -}}
 {{- printf "%s:%s" .Values.worker.image.repository (default .Chart.AppVersion .Values.worker.image.tag) -}}
+{{- end -}}
+
+{{- define "ggwd.image" -}}
+{{- include "ggwd.workerImage" . -}}
+{{- end -}}
+
+{{- define "ggwd.apiImage" -}}
+{{- $repository := default .Values.worker.image.repository .Values.api.image.repository -}}
+{{- $tag := default (default .Chart.AppVersion .Values.worker.image.tag) .Values.api.image.tag -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
+
+{{- define "ggwd.temporalFullname" -}}
+{{- default (printf "%s-temporal" .Release.Name) .Values.temporal.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "stack.labels" -}}
@@ -34,11 +48,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if $provided -}}
 {{- $provided -}}
 {{- else -}}
+{{- $cacheKey := printf "%s/%s" $secretName $key -}}
+{{- $cache := get $root.Values "_ggwdSecretValues" -}}
+{{- if not $cache -}}
+{{- $cache = dict -}}
+{{- $_ := set $root.Values "_ggwdSecretValues" $cache -}}
+{{- end -}}
+{{- if hasKey $cache $cacheKey -}}
+{{- get $cache $cacheKey -}}
+{{- else -}}
 {{- $existing := lookup "v1" "Secret" $root.Release.Namespace $secretName -}}
 {{- if and $existing (hasKey $existing.data $key) -}}
-{{- index $existing.data $key | b64dec -}}
+{{- $value := index $existing.data $key | b64dec -}}
+{{- $_ := set $cache $cacheKey $value -}}
+{{- $value -}}
 {{- else -}}
-{{- randAlphaNum 32 -}}
+{{- $value := randAlphaNum 32 -}}
+{{- $_ := set $cache $cacheKey $value -}}
+{{- $value -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

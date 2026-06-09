@@ -1,4 +1,4 @@
-{{- if .Values.networkPolicy.enabled }}
+{{- if and .Values.networkPolicy.enabled .Values.gluetun.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -16,15 +16,18 @@ spec:
     - from:
         - podSelector:
             matchLabels:
+              {{- include "stack.selectorLabels" . | nindent 14 }}
               stack.network/worker: "true"
       ports:
         - protocol: TCP
           port: {{ .Values.gluetun.httpProxyPort }}
+{{- end }}
+{{- if and .Values.networkPolicy.enabled .Values.temporal.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "stack.fullname" . }}-temporal-namespace-only
+  name: {{ include "stack.fullname" . }}-temporal-grpc-only-workers
   labels:
     {{- include "stack.labels" . | nindent 4 }}
 spec:
@@ -32,11 +35,42 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/name: temporal
+      app.kubernetes.io/component: frontend
   policyTypes: ["Ingress"]
   ingress:
     - from:
-        - podSelector: {}
+        - podSelector:
+            matchLabels:
+              {{- include "stack.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: worker
       ports:
         - protocol: TCP
           port: 7233
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "stack.fullname" . }}-temporal-internal
+  labels:
+    {{- include "stack.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: temporal
+      app.kubernetes.io/component: frontend
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/part-of: temporal
+      ports:
+        - protocol: TCP
+          port: 7233
+        - protocol: TCP
+          port: 7243
+        - protocol: TCP
+          port: 6933        
 {{- end }}

@@ -2,7 +2,7 @@
 apiVersion: v2
 name: ggwd
 description: GeoGuessrWatchDog
-version: 0.2.1
+version: 0.3.0
 appVersion: "v0.3.2"
 type: application
 dependencies:

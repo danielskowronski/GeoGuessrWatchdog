@@ -15,7 +15,7 @@ spec:
   storageClassName: {{ .Values.cacheStorage.storageClassName | quote }}
   {{- end }}
 {{- end }}
-{{- if .Values.cacheBrowser.enabled }}
+{{- if and .Values.cacheBrowser.enabled .Values.cacheStorage.enabled }}
 ---
 apiVersion: v1
 kind: ConfigMap

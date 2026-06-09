@@ -14,7 +14,7 @@ stringData:
     server:
       bind: ":{{ .Values.api.port }}"
     logging:
-      level: {{ .Values.worker.config.loggingLevel }}
+      level: {{ .Values.api.config.loggingLevel }}
     {{- if .Values.api.config.userAliases }}
     userAliases:
       {{- range $key, $value := .Values.api.config.userAliases }}
@@ -45,8 +45,8 @@ spec:
       imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
       containers:
         - name: api
-          image: "{{ include "ggwd.image" . }}"
-          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          image: "{{ include "ggwd.apiImage" . }}"
+          imagePullPolicy: {{ default .Values.worker.image.pullPolicy .Values.api.image.pullPolicy }}
           ports:  
             - name: http
               containerPort: {{ .Values.api.port }}
@@ -62,7 +62,7 @@ spec:
                 {{ .Values.api.config.generatedConfigDir }}/{{ .Values.api.config.generatedConfigFilename }}
                 {{- range .Values.api.config.extraSecrets }}
                 {{- range .items }}
-                ,{{ .diskPath }}/{{ .secretKey }}
+                ,{{ printf "%s/%s" .diskPath .secretKey | clean }}
                 {{- end }}
                 {{- end }}
             {{- range $k, $v := .Values.api.env }}
@@ -75,10 +75,13 @@ spec:
               subPath: {{ .Values.api.config.generatedConfigFilename }}
               readOnly: true
             {{- range .Values.api.config.extraSecrets }}
-            - name: {{ .name }}
-              mountPath: {{ .diskPath }}
+            {{- $secretMountName := .name }}
+            {{- range .items }}
+            - name: {{ $secretMountName }}
+              mountPath: {{ printf "%s/%s" .diskPath .secretKey | clean }}
               subPath: {{ .secretKey }}
               readOnly: true
+            {{- end }}
             {{- end }}
           resources: {{ toYaml .Values.api.resources | nindent 12 }}
           {{- if .Values.api.healthchecks.startup.enabled }}

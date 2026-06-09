@@ -16,9 +16,9 @@ stringData:
         ALTER ROLE {{ .Values.postgres.temporal.username }} WITH PASSWORD '{{ include "stack.secretValue" (list .Values.shared.dbUsersSecretName "temporal-password" .Values.postgres.temporal.password .) }}';
       END IF;
       IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{{ .Values.postgres.worker.username }}') THEN
-        CREATE ROLE {{ .Values.postgres.worker.username }} LOGIN PASSWORD '{{ include "stack.secretValue" (list .Values.shared.dbUsersSecretName "app-password" .Values.postgres.worker.password .) }}';
+        CREATE ROLE {{ .Values.postgres.worker.username }} LOGIN PASSWORD '{{ include "stack.secretValue" (list .Values.shared.dbUsersSecretName "worker-password" .Values.postgres.worker.password .) }}';
       ELSE
-        ALTER ROLE {{ .Values.postgres.worker.username }} WITH PASSWORD '{{ include "stack.secretValue" (list .Values.shared.dbUsersSecretName "app-password" .Values.postgres.worker.password .) }}';
+        ALTER ROLE {{ .Values.postgres.worker.username }} WITH PASSWORD '{{ include "stack.secretValue" (list .Values.shared.dbUsersSecretName "worker-password" .Values.postgres.worker.password .) }}';
       END IF;
     END
     $$;

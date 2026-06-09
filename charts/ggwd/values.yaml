@@ -72,6 +72,7 @@ worker:
           hour: 4
           minute: 0
         observeUsers: []
+        # - 5b51062a4010740f7cd91dd5
     cookie: ""  # if set, added to config, else need to set via user secret or env
     loggingLevel: info
     extraSecrets: []  # after helm generated configmap, all those are added in order to GGWD_CONFIG_PATH
@@ -99,8 +100,8 @@ api:
     # all below optiosn can be overriden with injected configmaps
     generatedConfigDir: /etc/ggwdapi
     generatedConfigFilename: config.yaml
-    userAliases:
-      "61edaa9efa85ad00017053a9": "Blinky"
+    userAliases: {}
+    # "5b51062a4010740f7cd91dd5": "Blinky"
     loggingLevel: info
   port: 8090
   ingress:
@@ -212,7 +213,12 @@ temporal:
   # TODO: add prometheus exporters
   enabled: true
   fullnameOverride: ggwd-temporal
+  schema:
+    useHelmHooks: false
   server:
+    metrics:
+      serviceMonitor:
+        enabled: true
     config:
       namespaces:
         create: true
@@ -258,6 +264,9 @@ temporal:
         - temporal.example.internal
       annotations: {}
       tls: []
+    additionalEnv:
+      - name: TEMPORAL_AUTH_ENABLED
+        value: "false"
 
 gluetun:
   # TODO: add some healthcheck
@@ -280,5 +289,4 @@ gluetun:
   resources: {}
 
 networkPolicy:
-  enabled: false  # FIXME: broken?
-  temporalNamespaceOnly: false  # FIXME: broken?
+  enabled: true

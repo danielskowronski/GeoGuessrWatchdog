@@ -1,1 +1,11 @@
 GGWD version {{ include "ggwd.image" . }} deployed!
+
+{{- if  and .Values.temporal.enabled .Values.temporal.web.ingress.enabled }}
+Temporal: http://{{ index .Values.temporal.web.ingress.hosts 0 }}/namespaces/ggwd/schedules
+{{- end }}
+{{- if and .Values.cacheBrowser.enabled .Values.cacheBrowser.ingress.enabled }}
+GGWD Cache: http://{{ .Values.cacheBrowser.ingress.host }}
+{{- end }}
+{{- if  and .Values.api.enabled .Values.api.ingress.enabled }}
+GGWD API: http://{{ .Values.api.ingress.host }}/version
+{{- end }}
