@@ -115,10 +115,11 @@ func EnsureFetchUserStatsAndProgressSchedule(
 	}
 
 	input := FetchMuiltipleUsersStatsAndProgressWorkflowInput{
-		TriggerUserStats:    true,
-		TriggerUserProgress: true,
-		UsersList:           cfg.Watchdogs.UserStats.ObserveUsers,
-		TemporalOptions:     cfg.Watchdogs.UserStats.Temporal,
+		TriggerUserStats:             true,
+		TriggerUserProgress:          true,
+		TriggerUserSingleplayerStats: true,
+		UsersList:                    cfg.Watchdogs.UserStats.ObserveUsers,
+		TemporalOptions:              cfg.Watchdogs.UserStats.Temporal,
 	}
 
 	action := &client.ScheduleWorkflowAction{

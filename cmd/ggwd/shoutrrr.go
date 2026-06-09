@@ -142,5 +142,7 @@ func SendMapChangeNotification(ctx context.Context, urls []string, divisionMode 
 		notificationMessage = formatMapUrl(divisionMode.mapInfo.ID, divisionMode.mapInfo.Name) + "\n\n" + messageDetails
 	}
 
+	notificationMessage += "\n\n[View on GeoGuessr](https://www.geoguessr.com/multiplayer/how-it-works)"
+
 	return SendNotification(ctx, urls, notificationTitle, notificationMessage, color)
 }

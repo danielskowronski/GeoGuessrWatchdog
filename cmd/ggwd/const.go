@@ -1,11 +1,12 @@
 package main
 
 const (
-	GG_API_PATH_DIVISIONS_LIST = "/v4/ranked-system/divisions"
-	GG_API_PATH_MAP_INFO       = "/maps/%s"
-	GG_API_PATH_USER_STATS     = "/v4/stats/users/%s"
-	GG_API_PATH_USER_PROGRESS  = "/v4/ranked-system/progress/%s"
-	GG_COOKIE_NAME             = "_ncfa"
+	GG_API_PATH_DIVISIONS_LIST    = "/v4/ranked-system/divisions"
+	GG_API_PATH_MAP_INFO          = "/maps/%s"
+	GG_API_PATH_USER_STATS        = "/v4/stats/users/%s"
+	GG_API_PATH_USER_PROGRESS     = "/v4/ranked-system/progress/%s"
+	GG_API_PATH_USER_SINGLEPLAYER = "/v3/users/%s/stats"
+	GG_COOKIE_NAME                = "_ncfa"
 
 	// TODO: split API names to workflows and verbs (scheduled/schedule/manual), also handle manual- with consts
 	TEMPORAL_SCHEDULE_FETCH_DIVISIONS_MAPS                = "fetch-divisions-maps-schedule"

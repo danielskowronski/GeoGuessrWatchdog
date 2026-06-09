@@ -3,7 +3,7 @@ apiVersion: v2
 name: ggwd
 description: GeoGuessrWatchDog
 version: 0.2.1
-appVersion: "v0.3.1"
+appVersion: "v0.3.2"
 type: application
 dependencies:
   - name: postgresql

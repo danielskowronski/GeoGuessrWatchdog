@@ -1,0 +1,101 @@
+{
+  "gamesPlayed": 41110,
+  "roundsPlayed": 205550,
+  "maxGameScore": {
+    "amount": "25000",
+    "unit": "points",
+    "percentage": 100
+  },
+  "averageGameScore": {
+    "amount": "18320",
+    "unit": "points",
+    "percentage": 73.28
+  },
+  "maxRoundScore": {
+    "amount": "5000",
+    "unit": "points",
+    "percentage": 100
+  },
+  "streakGamesPlayed": 123,
+  "closestDistance": {
+    "meters": {
+      "amount": "0.1",
+      "unit": "m"
+    },
+    "miles": {
+      "amount": "0.1",
+      "unit": "yd"
+    }
+  },
+  "averageDistance": {
+    "meters": {
+      "amount": "671.9",
+      "unit": "km"
+    },
+    "miles": {
+      "amount": "417.5",
+      "unit": "miles"
+    }
+  },
+  "averageTime": "162.48926 s",
+  "timedOutGuesses": 9056,
+  "battleRoyaleStats": [
+    {
+      "key": "Countries",
+      "value": {
+        "gamesPlayed": 478,
+        "wins": 189,
+        "averagePosition": 2.6903765
+      }
+    },
+    {
+      "key": "Distance",
+      "value": {
+        "gamesPlayed": 25,
+        "wins": 14,
+        "averagePosition": 3.96
+      }
+    }
+  ],
+  "dailyChallengeStreak": 1,
+  "dailyChallengeCurrentStreak": 0,
+  "dailyChallengesRolling7Days": [],
+  "dailyChallengeMedal": 0,
+  "streakMedals": [
+    {
+      "key": "UsStateStreak",
+      "value": 0
+    },
+    {
+      "key": "CountryStreak",
+      "value": 30
+    },
+    {
+      "key": "62a44b22040f04bd36e8a914",
+      "value": 30
+    }
+  ],
+  "streakRecords": [
+    {
+      "key": "CountryStreak",
+      "value": {
+        "maxStreak": 70,
+        "maxStreakDate": "2021-02-16T16:40:51.6100000Z"
+      }
+    },
+    {
+      "key": "UsStateStreak",
+      "value": {
+        "maxStreak": 2,
+        "maxStreakDate": "2021-08-13T21:42:09.1210000Z"
+      }
+    },
+    {
+      "key": "62a44b22040f04bd36e8a914",
+      "value": {
+        "maxStreak": 193,
+        "maxStreakDate": "2023-04-01T14:20:17.8180000Z"
+      }
+    }
+  ]
+}

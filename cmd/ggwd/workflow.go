@@ -121,6 +121,15 @@ func FetchSingleUserStatsAndProgressWorkflow(ctx workflow.Context, input FetchSi
 		}
 	}
 
+	if input.TriggerUserSingleplayerStats {
+		if err := workflow.ExecuteActivity(ctx, (*Activities).UserSingleplayerStatsFetchActivity, UserSingleplayerStatsFetchInput{
+			UserID:  input.UserID,
+			FetchID: fetchID,
+		}).Get(ctx, nil); err != nil {
+			return err
+		}
+	}
+
 	if err := workflow.ExecuteActivity(ctx, (*Activities).StoreFetchStatusActivity, StoreFetchStatusInput{
 		FetchType:  db.FetchTypeAllUserStatsPrefix + input.UserID,
 		WasSuccess: true, // if we are here, it means all previous steps were successful, otherwise we would have returned with an error
@@ -155,10 +164,11 @@ func FetchMuiltipleUsersStatsAndProgressWorkflow(ctx workflow.Context, input Fet
 		futures := make([]workflow.Future, 0, len(batch))
 		for _, userID := range batch {
 			f := workflow.ExecuteChildWorkflow(ctx, FetchSingleUserStatsAndProgressWorkflow, FetchSingleUserStatsAndProgressWorkflowInput{
-				TriggerUserStats:    input.TriggerUserStats,
-				TriggerUserProgress: input.TriggerUserProgress,
-				UserID:              userID,
-				TemporalOptions:     input.TemporalOptions,
+				TriggerUserStats:             input.TriggerUserStats,
+				TriggerUserProgress:          input.TriggerUserProgress,
+				TriggerUserSingleplayerStats: input.TriggerUserSingleplayerStats,
+				UserID:                       userID,
+				TemporalOptions:              input.TemporalOptions,
 			})
 			futures = append(futures, f)
 		}

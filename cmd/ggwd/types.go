@@ -42,16 +42,18 @@ type NotifierResult struct {
 }
 
 type FetchMuiltipleUsersStatsAndProgressWorkflowInput struct {
-	TriggerUserStats    bool `json:"triggerUserStats,omitempty"`
-	TriggerUserProgress bool `json:"triggerUserProgress,omitempty"`
+	TriggerUserStats             bool `json:"triggerUserStats,omitempty"`
+	TriggerUserProgress          bool `json:"triggerUserProgress,omitempty"`
+	TriggerUserSingleplayerStats bool `json:"triggerUserSingleplayerStats,omitempty"`
 
 	UsersList []string `json:"usersList,omitempty"`
 
 	TemporalOptions config.TemporalAdvanced `json:"temporalOptions,omitempty"`
 }
 type FetchSingleUserStatsAndProgressWorkflowInput struct {
-	TriggerUserStats    bool `json:"triggerUserStats,omitempty"`
-	TriggerUserProgress bool `json:"triggerUserProgress,omitempty"`
+	TriggerUserStats             bool `json:"triggerUserStats,omitempty"`
+	TriggerUserProgress          bool `json:"triggerUserProgress,omitempty"`
+	TriggerUserSingleplayerStats bool `json:"triggerUserSingleplayerStats,omitempty"`
 
 	UserID string `json:"userID,omitempty"`
 
@@ -66,10 +68,7 @@ type UserFetchInitOutput struct {
 	FetchID int64 `json:"fetch_id"`
 }
 
-type UserProgressFetchInput struct {
-	UserID  string `json:"user_id"`
-	FetchID int64  `json:"fetch_id"`
-}
+type UserProgressFetchInput UserStatsFetchInput
 
 type UserProgressFetchOutput struct {
 	ApiResultCode int       `json:"api_result_code"`
@@ -85,6 +84,15 @@ type UserStatsFetchInput struct {
 type UserStatsFetchOutput struct {
 	ApiResultCode int       `json:"api_result_code"`
 	GamesCount    uint64    `json:"games_count"`
+	FetchedAt     time.Time `json:"fetched_at"`
+}
+
+type UserSingleplayerStatsFetchInput UserStatsFetchInput
+
+type UserSingleplayerStatsFetchOutput struct {
+	ApiResultCode int       `json:"api_result_code"`
+	GamesPlayed   uint64    `json:"games_played"`
+	RoundsPlayed  uint64    `json:"rounds_played"`
 	FetchedAt     time.Time `json:"fetched_at"`
 }
 

@@ -33,7 +33,10 @@ SELECT
     unranked_solo_nomove_games,
     unranked_solo_nomove_wins,
     unranked_solo_nmpz_games,
-    unranked_solo_nmpz_wins
+    unranked_solo_nmpz_wins,
+
+    singleplayer_games_played,
+    singleplayer_rounds_played
 FROM user_fetch_combined_history
 WHERE user_id = $1
 ORDER BY fetch_timestamp ASC;

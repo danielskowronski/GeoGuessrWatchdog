@@ -33,6 +33,9 @@ function prepareRows(rows) {
     { source: "rankedSoloNomoveWins", delta: "rankedSoloNomoveWinsDelta" },
     { source: "rankedSoloNmpzGames", delta: "rankedSoloNmpzGamesDelta" },
     { source: "rankedSoloNmpzWins", delta: "rankedSoloNmpzWinsDelta" },
+
+    { source: "singleplayerGamesPlayed", delta: "singleplayerGamesPlayedDelta" },
+    { source: "singleplayerRoundsPlayed", delta: "singleplayerRoundsPlayedDelta" },
   ], "fetchTimestamp");
 
   // TODO: add daily win ratios
@@ -159,7 +162,35 @@ async function load() {
             return weekday.includes(needle);
           }
         },
-        { title: "Division", field: "divisionName", sorter: "string", headerFilter: "input", visible: false },
+
+        {
+          title: "Games<br />Single<br />player",
+          field: "singleplayerGamesPlayed",
+          formatter: valueWithDeltaFormatter({
+            deltaField: "singleplayerGamesPlayedDelta",
+            valueDigits: 0,
+            deltaDigits: 0,
+          }),
+          visible: true,
+        },
+        {
+          title: "Rounds<br />Single<br />player",
+          field: "singleplayerRoundsPlayed",
+          formatter: valueWithDeltaFormatter({
+            deltaField: "singleplayerRoundsPlayedDelta",
+            valueDigits: 0,
+            deltaDigits: 0,
+          }),
+          visible: false,
+        },
+
+        { 
+          title: "Division", 
+          field: "divisionName", 
+          sorter: "string", 
+          headerFilter: "input", 
+          visible: false 
+        },
         {
           title: "ELO<br />Overall",
           field: "ratingOverall",

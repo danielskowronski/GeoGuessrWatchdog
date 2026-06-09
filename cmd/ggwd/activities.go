@@ -328,6 +328,41 @@ func RunUserStatsFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggCo
 	}, nil
 }
 
+func (a *Activities) UserSingleplayerStatsFetchActivity(ctx context.Context, input UserSingleplayerStatsFetchInput) (UserSingleplayerStatsFetchOutput, error) {
+	result, err := RunUserSingleplayerStatsFetch(ctx, a.Config.Database, a.Config.GeoguessrAPI, input.UserID, input.FetchID)
+	if err != nil {
+		return UserSingleplayerStatsFetchOutput{}, err
+	}
+
+	return result, nil
+}
+
+func RunUserSingleplayerStatsFetch(ctx context.Context, dbConfig config.DatabaseConfig, ggConfig config.GeoguessrAPIConfig, userID string, fetchID int64) (UserSingleplayerStatsFetchOutput, error) {
+	api, err := NewAPIClient(ggConfig.Proxy, ggConfig.BaseURL, ggConfig.Cookie, ggConfig.Cache, map[string]string{})
+	if err != nil {
+		return UserSingleplayerStatsFetchOutput{}, err
+	}
+
+	db := NewDB(dbConfig.URL)
+
+	userSingleplayerStats, apiCode, err := api.FetchUserSingleplayerStats(ctx, userID)
+	if err != nil {
+		return UserSingleplayerStatsFetchOutput{}, err
+	}
+
+	_, err = db.InsertUserSingleplayerStatsHistory(ctx, *userSingleplayerStats, userID, fetchID)
+	if err != nil {
+		return UserSingleplayerStatsFetchOutput{}, err
+	}
+
+	return UserSingleplayerStatsFetchOutput{
+		ApiResultCode: apiCode,
+		GamesPlayed:   userSingleplayerStats.GamesPlayed,
+		RoundsPlayed:  userSingleplayerStats.RoundsPlayed,
+		FetchedAt:     time.Now().UTC(),
+	}, nil
+}
+
 func (a *Activities) StoreFetchStatusActivity(ctx context.Context, input StoreFetchStatusInput) (StoreFetchStatusOutput, error) {
 	result, err := RunStoreFetchStatus(ctx, a.Config.Database, input.FetchType, input.WasSuccess)
 	if err != nil {

@@ -1,8 +1,8 @@
 # User stats - competitive games
 
-## Game counts (stats)
+## Competitive game counts (stats)
 
-URL is `https://www.geoguessr.com/api/v4/stats/users/USER_ID` and example response is at [counts.json](./counts.json)
+URL is `https://www.geoguessr.com/api/v4/stats/users/USER_ID` and example response is at [v4_stats.json](./v4_stats.json)
 
 API responds with various keys, most of the descrive specific competitive game mode:
 
@@ -49,9 +49,9 @@ Some may contain additionaly:
 
 The goal of watching this API is to track daily number of games. To make it faily universal, all known competitive game modes must be tracked. It also makes sense to treat one API fetch as one target row in DB. From this perspective, we'll need 16x3 columns to match each game mode to 3 fields.
 
-## Game stats (progress)
+## Competitive game stats (progress)
 
-URL is `https://www.geoguessr.com/api/v4/ranked-system/progress/USER_ID` and example response is at [stats.json](./stats.json)
+URL is `https://www.geoguessr.com/api/v4/ranked-system/progress/USER_ID` and example response is at [progress.json](./progress.json)
 
 Fields are as follows:
 
@@ -79,3 +79,28 @@ Following fields matter:
 - `gameModeRatings.nmpzDuels` - defaulting to 0 if does not exist
 - `guessedFirstRate`
 - `bestCountries` and `worstCountries` which can be flattened to CSV; this is interesting field for further research
+
+## Singleplayer 
+
+URL is `https://www.geoguessr.com/api/v3/users/USER_ID/stats` and example response is at [v3_stats.json](./v3_stats.json)
+
+Only interesting fields to track are related to singleplayer games on community maps to track training.
+
+Interesting fields:
+
+- `gamesPlayed` - number of community games played
+- `roundsPlayed` - assumed as `5*gamesPlayed`, because game is always 5 rounds (at least in 2024-2026)
+
+Other fields:
+
+- `maxGameScore` - eveyrone will at some stage get 25k/100%
+- `maxRoundScore` - eveyrone will at some stage get 5k/100%
+- `averageGameScore` - this is average over all account history, so hard to influence; also it's for various maps
+- `streakGamesPlayed` - number of country/state streak games lost, not telling much since streaks can be very long and take multiple days
+- `closestDistance` - eveyrone will at some stage get 0.1m/0.1yd
+- `averageDistance` - same as `averageGameScore`
+- `averageTime` - doesn't match fixed time community games
+- `timedOutGuesses` - not very telling
+- `battleRoyaleStats` - maybe interesting in future
+- `dailyChallengeStreak` / `dailyChallengeCurrentStreak` / `dailyChallengesRolling7Days` / `dailyChallengeMedal` - not important to track daily, historical data is available
+- `streakMedals` / `streakRecords` - not important to track daily, historical data is available

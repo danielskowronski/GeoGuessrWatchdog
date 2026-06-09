@@ -365,6 +365,27 @@ func (d *DB) InsertUserStatsHistory(ctx context.Context, stats apischema.StatsIn
 
 	return true, nil
 }
+func (d *DB) InsertUserSingleplayerStatsHistory(ctx context.Context, stats apischema.SingleplayerStatsInfo, userID string, fetchID int64) (bool, error) {
+	pool, err := pgxpool.New(ctx, d.url)
+	if err != nil {
+		return false, err
+	}
+	defer pool.Close()
+
+	q := db.New(pool)
+
+	_, err = q.InsertUserSingleplayerHistory(ctx, db.InsertUserSingleplayerHistoryParams{
+		UserID:       userID,
+		FetchID:      fetchID,
+		GamesPlayed:  int64(stats.GamesPlayed),
+		RoundsPlayed: int64(stats.RoundsPlayed),
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
 
 func (d *DB) GetCurrentDivisionMapInfo(ctx context.Context, divisionName string, gameMode string) (*DivisionModeMapDetails, error) {
 	pool, err := pgxpool.New(ctx, d.url)

@@ -187,3 +187,17 @@ func (a *ApiClient) FetchUserStats(ctx context.Context, userID string) (*apische
 
 	return statsInfo, code, nil
 }
+
+func (a *ApiClient) FetchUserSingleplayerStats(ctx context.Context, userID string) (*apischema.SingleplayerStatsInfo, int, error) {
+	body, code, err := a.FetchJSON(ctx, a.apiBase+fmt.Sprintf(GG_API_PATH_USER_SINGLEPLAYER, userID))
+	if err != nil {
+		return nil, code, err
+	}
+
+	singleplayerStatsInfo, err := apischema.DecodeApiResponseSingleplayerStats(body)
+	if err != nil {
+		return nil, code, fmt.Errorf("failed to decode API response: %w", err)
+	}
+
+	return singleplayerStatsInfo, code, nil
+}
